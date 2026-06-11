@@ -2,10 +2,10 @@
 <!--
   ============================================================
   FILE: casestudy.html
-  VERSION: 2.0
+  VERSION: 2.1
   DATE: 2026-06-11
   PURPOSE: Interactive case study with Supabase integration
-           Saves participant data to cloud database
+           Saves participant name, email, score, answers, session_id
   DEPLOYMENT: GitHub Pages + Cloudflare DNS
   AUTHOR: Ghanshyam Acharya, Human Factor Trainer
   ============================================================
@@ -223,14 +223,17 @@
     container.innerHTML = `<div class="question-card completion-card"><div class="completion-icon">✓</div><h2>Case Study Complete!</h2><p style="color:#7b8a9b;">You have completed all 10 questions.</p><div style="background:rgba(69,179,255,0.1);padding:1.5rem;border-radius:16px;margin:1.5rem 0;"><div style="font-size:1.8rem;font-weight:700;color:#ffd166;">${totalScore} / 100 points</div><div class="grade-badge ${grade.class}" style="font-size:1rem;margin-top:0.5rem;">${grade.icon} ${grade.name}</div></div><div style="max-height:400px;overflow-y:auto;margin-bottom:1.5rem;text-align:left;">${resultsHtml}</div><div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;"><button class="btn-submit" style="width:auto;padding:0.8rem 1.5rem;" onclick="generateCertificate()">🏆 Download Certificate</button><button class="btn-submit" style="width:auto;padding:0.8rem 1.5rem;background:#7b8a9b;" onclick="exitToJoin()">📋 Exit to Home</button></div></div>`;
   }
 
-  // Save to Supabase
-  async function saveToSupabase(participantName, totalScore, answersArray) {
+  // ============================================================
+  // SAVE TO SUPABASE (WITH EMAIL)
+  // ============================================================
+  async function saveToSupabase(participantName, participantEmail, totalScore, answersArray) {
     try {
       const sessionId = getSessionId();
       await supabase.rpc('set_app_session', { session_id: sessionId });
       
       const { error } = await supabase.from('participants').insert([{
         name: participantName,
+        email: participantEmail,
         score: totalScore,
         answers: answersArray,
         session_id: sessionId,
@@ -243,13 +246,17 @@
     } catch (err) { console.error('Error saving to Supabase:', err); }
   }
 
+  // ============================================================
+  // CERTIFICATE GENERATION (with email saved to Supabase)
+  // ============================================================
   window.generateCertificate = async function() {
     const totalScore = answers.reduce((sum, a) => sum + a.pointsEarned, 0);
     const grade = getGrade(totalScore);
     const playerName = currentPlayer ? currentPlayer.name : 'Participant';
+    const playerEmail = currentPlayer ? currentPlayer.email : null;
     
-    // Save to Supabase
-    await saveToSupabase(playerName, totalScore, answers);
+    // Save to Supabase (includes email)
+    await saveToSupabase(playerName, playerEmail, totalScore, answers);
     
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });

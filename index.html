@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  FILE: index.html
+  VERSION: 1.0
+  DATE: 2026-06-11
+  PURPOSE: Landing page — participant enters their name and starts the case study
+  DEPLOYMENT: GitHub Pages + Cloudflare DNS
+  AUTHOR: HF Training Module
+  ============================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tara Air | Human Factors Case Study</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a2a3a 0%, #0d1b2a 50%, #1b263b 100%);
+      color: #e0e1dd;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .join-container {
+      max-width: 550px;
+      width: 100%;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo h1 {
+      font-size: 2.8rem;
+      background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 1px;
+    }
+
+    .logo .subtitle {
+      font-size: 0.7rem;
+      color: #ffd166;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    .logo .date {
+      font-size: 0.6rem;
+      color: #7b8a9b;
+      margin-top: 0.5rem;
+    }
+
+    .card {
+      background: rgba(27, 38, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(69, 179, 255, 0.25);
+      border-radius: 28px;
+      padding: 2rem;
+      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: #ffffff;
+    }
+
+    .card-sub {
+      font-size: 0.7rem;
+      color: #7b8a9b;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #ffd166;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(13, 27, 42, 0.8);
+      border: 1px solid rgba(69, 179, 255, 0.3);
+      border-radius: 14px;
+      color: #e0e1dd;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #ffd166;
+      box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2);
+    }
+
+    .btn {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 1rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      background: linear-gradient(135deg, #45b3ff 0%, #1a6bc3 100%);
+      color: white;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(69, 179, 255, 0.3);
+    }
+
+    .info-box {
+      background: rgba(69, 179, 255, 0.08);
+      border: 1px solid rgba(69, 179, 255, 0.2);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .info-box p {
+      font-size: 0.75rem;
+      color: #a0b0c0;
+    }
+
+    .info-box strong {
+      color: #ffd166;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.6rem;
+      color: #5a6e84;
+    }
+
+    .footer a {
+      color: #5a6e84;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: #ffd166;
+    }
+  </style>
+</head>
+<body>
+<div class="join-container">
+  <div class="logo">
+    <h1>✈️ TARA AIR 9N-AET</h1>
+    <div class="subtitle">Human Factors Case Study</div>
+    <div class="date">Pokhara → Jomsom • 29 May 2022</div>
+  </div>
+
+  <div class="card">
+    <h2>Enter Your Name</h2>
+    <div class="card-sub">CAAN Mandatory Training • NCAR Part 145</div>
+
+    <div class="input-group">
+      <label>✏️ PARTICIPANT NAME</label>
+      <input type="text" id="player-name" placeholder="Enter your full name" autocomplete="off">
+    </div>
+
+    <button class="btn" onclick="joinSession()">▶ START CASE STUDY</button>
+
+    <div class="info-box">
+      <p>📋 <strong>10 Questions | 100 Points</strong><br>
+      Passing score: 70 points (70%) • Time limit: 30 minutes</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    NCAR Part 145 • Human Factors & Decision-Making • 2026
+  </div>
+</div>
+
+<script>
+  function joinSession() {
+    const nameInput = document.getElementById('player-name');
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      alert('Please enter your name to continue.');
+      nameInput.focus();
+      return;
+    }
+
+    // Create participant object
+    const participant = {
+      id: Date.now().toString(),
+      name: name,
+      role: 'participant',
+      score: 0,
+      joinedAt: new Date().toISOString()
+    };
+
+    // Save to localStorage
+    localStorage.setItem('hf-current-player', JSON.stringify(participant));
+
+    // Also store in participants array (for facilitator view)
+    let allParticipants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
+    const existing = allParticipants.find(p => p.name === name);
+    if (!existing) {
+      allParticipants.push(participant);
+      localStorage.setItem('hf-participants', JSON.stringify(allParticipants));
+    }
+
+    // Redirect to case study
+    window.location.href = 'casestudy.html';
+  }
+</script>
+</body>
+</html>

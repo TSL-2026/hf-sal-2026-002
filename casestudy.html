@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  FILE: casestudy.html
+  VERSION: 1.0
+  DATE: 2026-06-11
+  PURPOSE: Interactive case study — displays 10 questions,
+           handles answer submission, scoring, 30-minute timer,
+           progress tracking, and certificate generation (PDF)
+  DEPLOYMENT: GitHub Pages + Cloudflare DNS
+  AUTHOR: HF Training Module
+  ============================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tara Air | Case Study</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a2a3a 0%, #0d1b2a 50%, #1b263b 100%);
+      color: #e0e1dd;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(13, 27, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(69, 179, 255, 0.3);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .logo p {
+      font-size: 0.6rem;
+      color: #7b8a9b;
+    }
+
+    .player-info {
+      text-align: right;
+    }
+
+    .player-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffd166;
+    }
+
+    .player-score {
+      font-size: 0.75rem;
+      color: #45b3ff;
+    }
+
+    .timer-display {
+      font-size: 0.9rem;
+      font-family: monospace;
+      color: #ffd166;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .exit-btn, .cert-btn {
+      background: transparent;
+      border: 1px solid #7b8a9b;
+      color: #7b8a9b;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.6rem;
+      margin-left: 0.3rem;
+    }
+
+    .exit-btn:hover, .cert-btn:hover {
+      border-color: #ffd166;
+      color: #ffd166;
+    }
+
+    /* Main Content */
+    .main-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Progress Bar */
+    .progress-section {
+      background: rgba(27, 38, 59, 0.5);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      background: #2a2e3a;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #45b3ff, #2ec4b6);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 0.7rem;
+      color: #7b8a9b;
+      text-align: right;
+    }
+
+    /* Question Card */
+    .question-card {
+      background: rgba(27, 38, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(69, 179, 255, 0.2);
+      border-radius: 24px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
+    }
+
+    .question-number {
+      font-size: 0.7rem;
+      color: #ffd166;
+      font-family: monospace;
+    }
+
+    .question-points {
+      font-size: 0.7rem;
+      color: #45b3ff;
+      background: rgba(69, 179, 255, 0.1);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .question-framework {
+      font-size: 0.65rem;
+      color: #7b8a9b;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .scenario-box {
+      background: rgba(13, 27, 42, 0.5);
+      border-left: 3px solid #45b3ff;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .option-radio {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(13, 27, 42, 0.5);
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-radio:hover {
+      background: rgba(69, 179, 255, 0.15);
+    }
+
+    .option-radio input {
+      accent-color: #45b3ff;
+      width: 18px;
+      height: 18px;
+    }
+
+    .option-text {
+      font-size: 0.9rem;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #45b3ff, #1a6bc3);
+      color: white;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(69, 179, 255, 0.3);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Completion Screen */
+    .completion-card {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .completion-icon {
+      width: 70px;
+      height: 70px;
+      background: rgba(46, 196, 182, 0.15);
+      border: 2px solid #2ec4b6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+    }
+
+    .grade-badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    .grade-distinction {
+      background: rgba(46, 196, 182, 0.2);
+      color: #2ec4b6;
+      border: 1px solid rgba(46, 196, 182, 0.3);
+    }
+
+    .grade-completed {
+      background: rgba(69, 179, 255, 0.2);
+      color: #45b3ff;
+      border: 1px solid rgba(69, 179, 255, 0.3);
+    }
+
+    .grade-attended {
+      background: rgba(230, 57, 70, 0.2);
+      color: #e63946;
+      border: 1px solid rgba(230, 57, 70, 0.3);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success-message {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(46, 196, 182, 0.9);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      z-index: 2000;
+      animation: fadeOut 3s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      70% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem;
+      }
+      .question-card {
+        padding: 1.2rem;
+      }
+      .question-text {
+        font-size: 1rem;
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <h1>✈️ TARA AIR 9N-AET | CASE STUDY</h1>
+    <p>Pokhara → Jomsom • 29 May 2022</p>
+  </div>
+  <div class="player-info">
+    <div class="player-name" id="player-name">Loading...</div>
+    <div class="player-score" id="player-score">Score: 0 pts</div>
+    <div>
+      <button class="cert-btn" onclick="generateCertificate()">🏆 Certificate</button>
+      <button class="exit-btn" onclick="exitToJoin()">✕ Exit</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-container" id="main-container"></div>
+
+<script>
+  // ============================================================
+  // QUESTION DATA (10 Questions x 10 points = 100 points total)
+  // ============================================================
+  const QUESTIONS = [
+    {
+      id: 1,
+      framework: "Dirty Dozen (Gordon Dupont)",
+      scenario: "On the CVR, the captain is heard expressing hesitation about the weather. However, a passenger or ground crew member is heard 'advising strongly to the PIC to conduct the flight.' The aircraft departs into deteriorating conditions.",
+      question: "Which Dirty Dozen factor is most clearly at work in the decision to depart despite the captain's hesitation?",
+      options: [
+        "Pressure (commercial/passenger pressure to depart)",
+        "Complacency (assuming weather will improve)",
+        "Lack of assertiveness (captain not asserting authority)",
+        "Norms ('everyone else is going')"
+      ],
+      correct: 0,  // Index of correct answer (0-based)
+      points: 10
+    },
+    {
+      id: 2,
+      framework: "Normalization of Deviance (Diane Vaughan / James Reason)",
+      scenario: "The investigation revealed that the Terrain Awareness Warning System (TAWS) was intentionally inhibited. The aircraft had experienced 'nuisance warnings' due to incorrect calibration. Over time, the crew had gotten used to flying without TAWS. No one questioned its absence.",
+      question: "This reflects which human factors concept?",
+      options: [
+        "Plan continuation bias",
+        "Normalization of deviance",
+        "Confirmation bias",
+        "Sunk cost fallacy"
+      ],
+      correct: 1,
+      points: 10
+    },
+    {
+      id: 3,
+      framework: "Authority Gradient (CRM)",
+      scenario: "The captain had 17,500 total flight hours. The First Officer had only 520 total hours. The investigation cited 'poor CRM (crew resource management)' as a contributing factor. The CVR revealed the captain assumed most cockpit duties.",
+      question: "What authority gradient issue is most likely at play?",
+      options: [
+        "Gradient too flat — no clear decision-maker",
+        "Gradient too steep — First Officer reluctant to challenge captain",
+        "Gradient optimal — experience difference is appropriate",
+        "Gradient reversed — First Officer dominating decisions"
+      ],
+      correct: 1,
+      points: 10
+    },
+    {
+      id: 4,
+      framework: "Situational Awareness (Mica Endsley)",
+      scenario: "The aircraft 'inadvertently entered IMC conditions' while trying to stay visual (VFR). The crew failed to monitor the proper course. TAWS was inhibited. The aircraft flew into mountainous terrain without any apparent awareness of the impending impact.",
+      question: "Which level of Endsley's Situational Awareness failed first?",
+      options: [
+        "Level 1 — Perception (did not see weather deteriorating)",
+        "Level 2 — Comprehension (did not understand the risk)",
+        "Level 3 — Projection (did not predict terrain impact)",
+        "All three levels failed simultaneously"
+      ],
+      correct: 2,
+      points: 10
+    },
+    {
+      id: 5,
+      framework: "Decision-Making Bias",
+      scenario: "The captain expressed dissatisfaction with 'the behaviour of other pilots who conduct VFR flights in such unfavourable weather.' Yet he continued. The investigation cited 'flight crew's failure to follow SOP' and 'plan continuation' as factors.",
+      question: "What bias best explains the captain's decision to continue despite his own expressed concerns?",
+      options: [
+        "Confirmation bias (seeking weather that confirms his plan)",
+        "Anchoring (fixed on the original flight plan)",
+        "Plan continuation bias (pressing on past decision point)",
+        "Overconfidence (experience as armour)"
+      ],
+      correct: 2,
+      points: 10
+    },
+    {
+      id: 6,
+      framework: "Swiss Cheese Model (James Reason)",
+      scenario: "TAWS inhibited + weather deteriorating + captain hesitant but continued + poor CRM + First Officer inexperienced + no weather second check.",
+      question: "How many defensive layers failed in this accident?",
+      options: [
+        "2 layers",
+        "3 layers",
+        "4 layers",
+        "5 or more layers"
+      ],
+      correct: 3,
+      points: 10
+    },
+    {
+      id: 7,
+      framework: "Psychological Safety (Amy Edmondson)",
+      scenario: "The First Officer had only 520 hours. The captain had 17,500 hours. The First Officer did not speak up when the captain continued into bad weather.",
+      question: "What does this indicate about psychological safety in the cockpit?",
+      options: [
+        "Excellent psychological safety",
+        "The First Officer was incompetent",
+        "Low psychological safety — speaking up felt dangerous",
+        "Psychological safety is irrelevant"
+      ],
+      correct: 2,
+      points: 10
+    },
+    {
+      id: 8,
+      framework: "Just Culture (Sidney Dekker)",
+      scenario: "The captain made a poor decision to continue. He was not malicious. He was trying to complete the flight for waiting passengers.",
+      question: "According to Dekker's Just Culture, how should this be classified?",
+      options: [
+        "Reckless behaviour — sanction",
+        "Human error — console and fix the system",
+        "At-risk behaviour — coach and fix perception of risk",
+        "Criminal behaviour — prosecute"
+      ],
+      correct: 2,
+      points: 10
+    },
+    {
+      id: 9,
+      framework: "Drift into Failure (Sidney Dekker)",
+      scenario: "TAWS had been inhibited for months. Weather minima had been gradually pushed. Crew had become comfortable with marginal VFR.",
+      question: "What is this slow, invisible erosion of safety margins called?",
+      options: [
+        "Swiss Cheese",
+        "Normalization of deviance",
+        "Drift into failure",
+        "Plan continuation"
+      ],
+      correct: 2,
+      points: 10
+    },
+    {
+      id: 10,
+      framework: "The Accident Chain (Six Links)",
+      scenario: "Route economics → Marginal weather policy → No TAWS → Inexperienced FO → Captain hesitation ignored → CFIT.",
+      question: "Where in the chain from executive desk to frontline did the accident begin?",
+      options: [
+        "At the frontline (captain's decision)",
+        "In the cockpit (poor CRM)",
+        "At the executive desk (route economics, training, policy)",
+        "At the regulator (CAAN oversight)"
+      ],
+      correct: 2,
+      points: 10
+    }
+  ];
+
+  // ============================================================
+  // GLOBAL VARIABLES
+  // ============================================================
+  let currentPlayer = null;
+  let currentQuestionIndex = 0;
+  let answers = [];
+  let sessionEndTime = null;
+  let sessionTimer = null;
+  let isSessionActive = true;
+
+  // ============================================================
+  // HELPER FUNCTIONS
+  // ============================================================
+  function showSuccessMessage(message) {
+    const div = document.createElement('div');
+    div.className = 'success-message';
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  function getGrade(score) {
+    if (score >= 80) return { name: "Completed with Distinction", class: "grade-distinction", icon: "🏆" };
+    if (score >= 70) return { name: "Completed", class: "grade-completed", icon: "✅" };
+    return { name: "Attended", class: "grade-attended", icon: "📋" };
+  }
+
+  function updateScoreDisplay() {
+    const totalScore = answers.reduce((sum, a) => sum + (a.isCorrect ? QUESTIONS[a.questionIndex].points : 0), 0);
+    const grade = getGrade(totalScore);
+    document.getElementById('player-score').innerHTML = `Score: ${totalScore} pts <span style="font-size:0.65rem;">${grade.icon}</span>`;
+    
+    // Update player in localStorage
+    if (currentPlayer) {
+      currentPlayer.score = totalScore;
+      localStorage.setItem('hf-current-player', JSON.stringify(currentPlayer));
+      
+      let allParticipants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
+      const idx = allParticipants.findIndex(p => p.id === currentPlayer.id);
+      if (idx !== -1) {
+        allParticipants[idx].score = totalScore;
+        localStorage.setItem('hf-participants', JSON.stringify(allParticipants));
+      }
+    }
+  }
+
+  // ============================================================
+  // TIMER FUNCTIONS
+  // ============================================================
+  function startTimer() {
+    if (sessionTimer) clearInterval(sessionTimer);
+    
+    sessionEndTime = localStorage.getItem('hf-session-end-time');
+    if (!sessionEndTime) {
+      sessionEndTime = Date.now() + (30 * 60 * 1000);
+      localStorage.setItem('hf-session-end-time', sessionEndTime);
+    }
+    
+    sessionTimer = setInterval(() => {
+      const now = Date.now();
+      const timeLeft = sessionEndTime - now;
+      
+      if (timeLeft <= 0 && isSessionActive) {
+        endSession();
+      } else if (isSessionActive) {
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        const timerElement = document.getElementById('timer-display');
+        if (timerElement) {
+          timerElement.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+      }
+    }, 1000);
+  }
+
+  function endSession() {
+    isSessionActive = false;
+    clearInterval(sessionTimer);
+    renderCompletionScreen();
+  }
+
+  // ============================================================
+  // RENDER FUNCTIONS
+  // ============================================================
+  function loadPlayer() {
+    const saved = localStorage.getItem('hf-current-player');
+    if (!saved) {
+      window.location.href = 'index.html';
+      return;
+    }
+    currentPlayer = JSON.parse(saved);
+    document.getElementById('player-name').textContent = currentPlayer.name;
+    
+    // Load saved answers
+    const savedAnswers = localStorage.getItem(`tara-answers-${currentPlayer.id}`);
+    if (savedAnswers) {
+      answers = JSON.parse(savedAnswers);
+      currentQuestionIndex = answers.length;
+    }
+    
+    // Check session end
+    const sessionEnd = localStorage.getItem('hf-session-end-time');
+    if (sessionEnd && Date.now() > parseInt(sessionEnd)) {
+      isSessionActive = false;
+      renderCompletionScreen();
+    } else {
+      startTimer();
+      renderCurrentQuestion();
+    }
+  }
+
+  function renderProgress() {
+    const progressContainer = document.getElementById('progress-section');
+    if (!progressContainer) return;
+    
+    const totalScore = answers.reduce((sum, a) => sum + (a.isCorrect ? QUESTIONS[a.questionIndex].points : 0), 0);
+    const percentComplete = (answers.length / QUESTIONS.length) * 100;
+    
+    progressContainer.innerHTML = `
+      <div class="progress-bar-container">
+        <div class="progress-fill" style="width: ${percentComplete}%;"></div>
+      </div>
+      <div class="progress-text">
+        Questions: ${answers.length}/${QUESTIONS.length} | Score: ${totalScore}/100 points
+      </div>
+    `;
+  }
+
+  function renderCurrentQuestion() {
+    const container = document.getElementById('main-container');
+    
+    if (currentQuestionIndex >= QUESTIONS.length) {
+      renderCompletionScreen();
+      return;
+    }
+    
+    const q = QUESTIONS[currentQuestionIndex];
+    const timeLeft = sessionEndTime ? Math.max(0, Math.floor((sessionEndTime - Date.now()) / 1000)) : 1800;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    
+    container.innerHTML = `
+      <div class="progress-section" id="progress-section"></div>
+      
+      <div class="question-card">
+        <div class="question-header">
+          <span class="question-number">Question ${currentQuestionIndex + 1}/${QUESTIONS.length}</span>
+          <span class="question-points">${q.points} points</span>
+        </div>
+        <div class="question-framework">${escapeHtml(q.framework)}</div>
+        <div class="scenario-box">📖 ${escapeHtml(q.scenario)}</div>
+        <div class="question-text">${escapeHtml(q.question)}</div>
+        
+        <div class="options-grid" id="options-grid">
+          ${q.options.map((opt, idx) => `
+            <label class="option-radio">
+              <input type="radio" name="answer" value="${idx}">
+              <span class="option-text">${escapeHtml(opt)}</span>
+            </label>
+          `).join('')}
+        </div>
+        
+        <button class="btn-submit" onclick="submitAnswer()">✓ SUBMIT ANSWER</button>
+      </div>
+      
+      <div style="text-align: center; margin-top: 1rem;">
+        <span class="timer-display" id="timer-display">⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</span>
+      </div>
+    `;
+    
+    renderProgress();
+  }
+
+  function submitAnswer() {
+    const selectedRadio = document.querySelector('input[name="answer"]:checked');
+    if (!selectedRadio) {
+      showSuccessMessage('⚠️ Please select an answer before submitting');
+      return;
+    }
+    
+    const selectedIndex = parseInt(selectedRadio.value);
+    const currentQ = QUESTIONS[currentQuestionIndex];
+    const isCorrect = (selectedIndex === currentQ.correct);
+    const pointsEarned = isCorrect ? currentQ.points : 0;
+    
+    answers.push({
+      questionIndex: currentQuestionIndex,
+      questionId: currentQ.id,
+      selectedAnswer: selectedIndex,
+      selectedText: currentQ.options[selectedIndex],
+      isCorrect: isCorrect,
+      pointsEarned: pointsEarned
+    });
+    
+    // Save answers
+    localStorage.setItem(`tara-answers-${currentPlayer.id}`, JSON.stringify(answers));
+    
+    updateScoreDisplay();
+    
+    if (isCorrect) {
+      showSuccessMessage(`✓ Correct! +${pointsEarned} points`);
+    } else {
+      showSuccessMessage(`✗ Incorrect. The correct answer is: ${currentQ.options[currentQ.correct]}`);
+    }
+    
+    currentQuestionIndex++;
+    
+    if (currentQuestionIndex >= QUESTIONS.length) {
+      renderCompletionScreen();
+    } else {
+      renderCurrentQuestion();
+    }
+  }
+
+  function renderCompletionScreen() {
+    const container = document.getElementById('main-container');
+    const totalScore = answers.reduce((sum, a) => sum + a.pointsEarned, 0);
+    const grade = getGrade(totalScore);
+    
+    let resultsHtml = '';
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const q = QUESTIONS[i];
+      const answer = answers.find(a => a.questionIndex === i);
+      const isCorrect = answer ? answer.isCorrect : false;
+      const userAnswer = answer ? answer.selectedText : 'Not answered';
+      
+      resultsHtml += `
+        <div style="background: rgba(13, 27, 42, 0.5); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid ${isCorrect ? '#2ec4b6' : '#e63946'};">
+          <div style="font-weight: 600; margin-bottom: 0.3rem;">Q${i+1}: ${q.framework}</div>
+          <div style="font-size: 0.8rem;">Your answer: ${escapeHtml(userAnswer)}</div>
+          <div style="font-size: 0.75rem; color: ${isCorrect ? '#2ec4b6' : '#e63946'}; margin-top: 0.3rem;">
+            ${isCorrect ? '✓ Correct' : '✗ Incorrect'} (${answer ? answer.pointsEarned : 0}/${q.points} points)
+          </div>
+        </div>
+      `;
+    }
+    
+    container.innerHTML = `
+      <div class="question-card completion-card">
+        <div class="completion-icon">✓</div>
+        <h2 style="margin-bottom: 0.5rem;">Case Study Complete!</h2>
+        <p style="color: #7b8a9b; margin-bottom: 1rem;">You have completed all 10 questions.</p>
+        
+        <div style="background: rgba(69, 179, 255, 0.1); padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem;">
+          <div style="font-size: 1.8rem; font-weight: 700; color: #ffd166;">${totalScore} / 100 points</div>
+          <div class="grade-badge ${grade.class}" style="font-size: 1rem; margin-top: 0.5rem;">${grade.icon} ${grade.name}</div>
+        </div>
+        
+        <div style="max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; text-align: left;">
+          ${resultsHtml}
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn-submit" style="width: auto; padding: 0.8rem 1.5rem;" onclick="generateCertificate()">🏆 Download Certificate</button>
+          <button class="btn-submit" style="width: auto; padding: 0.8rem 1.5rem; background: #7b8a9b;" onclick="exitToJoin()">📋 Exit to Home</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ============================================================
+  // CERTIFICATE GENERATION
+  // ============================================================
+  function generateCertificate() {
+    const totalScore = answers.reduce((sum, a) => sum + a.pointsEarned, 0);
+    const grade = getGrade(totalScore);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    
+    // Background
+    doc.setFillColor(10, 42, 58);
+    doc.rect(0, 0, 297, 210, 'F');
+    
+    // Decorative bars
+    doc.setFillColor(69, 179, 255);
+    doc.rect(0, 0, 297, 5, 'F');
+    doc.rect(0, 205, 297, 5, 'F');
+    
+    // Borders
+    doc.setDrawColor(255, 209, 102);
+    doc.setLineWidth(1.5);
+    doc.rect(10, 10, 277, 190);
+    doc.setDrawColor(69, 179, 255);
+    doc.setLineWidth(0.5);
+    doc.rect(13, 13, 271, 184);
+    
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(28);
+    doc.setTextColor(255, 209, 102);
+    doc.text('CERTIFICATE OF COMPLETION', 148.5, 45, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(69, 179, 255);
+    doc.text('Tara Air 9N-AET Human Factors Case Study', 148.5, 60, { align: 'center' });
+    doc.text('NCAR Part 145 • CAAN Mandatory Training', 148.5, 68, { align: 'center' });
+    
+    // Recipient
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text('This certificate is presented to', 148.5, 95, { align: 'center' });
+    
+    doc.setFontSize(26);
+    doc.setTextColor(255, 209, 102);
+    doc.text(currentPlayer.name, 148.5, 115, { align: 'center' });
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('for successful completion of the', 148.5, 135, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(69, 179, 255);
+    doc.text('Tara Air 9N-AET Human Factors Case Study', 148.5, 148, { align: 'center' });
+    
+    // Grade and Score
+    doc.setFontSize(13);
+    doc.setTextColor(255, 209, 102);
+    const gradeText = grade.name === 'Completed with Distinction' ? 'DISTINCTION' : 
+                      grade.name === 'Completed' ? 'COMPLETED' : 'ATTENDED';
+    doc.text(`${gradeText} — ${totalScore}/100 points`, 148.5, 165, { align: 'center' });
+    
+    // Date
+    doc.setFontSize(9);
+    doc.setTextColor(123, 138, 155);
+    const today = new Date().toLocaleDateString('en-GB');
+    doc.text(`Issue Date: ${today}`, 148.5, 185, { align: 'center' });
+    
+    doc.save(`Certificate_${currentPlayer.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+  }
+
+  function exitToJoin() {
+    if (confirm('Exit this session? Your progress will be saved.')) {
+      window.location.href = 'index.html';
+    }
+  }
+
+  // ============================================================
+  // INITIALIZATION
+  // ============================================================
+  loadPlayer();
+</script>
+</body>
+</html>

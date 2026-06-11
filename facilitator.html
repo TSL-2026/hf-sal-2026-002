@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  FILE: facilitator.html
+  VERSION: 1.0
+  DATE: 2026-06-11
+  PURPOSE: Facilitator dashboard — view all participants, their scores,
+           question completion status, send live announcements,
+           reset sessions, and export results
+  DEPLOYMENT: GitHub Pages + Cloudflare DNS
+  AUTHOR: HF Training Module
+  ============================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Facilitator Dashboard | Tara Air Case Study</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0a2a3a 0%, #0d1b2a 50%, #1b263b 100%);
+      color: #e0e1dd;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: rgba(13, 27, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(69, 179, 255, 0.3);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .logo p {
+      font-size: 0.6rem;
+      color: #7b8a9b;
+    }
+
+    .btn-exit {
+      background: transparent;
+      border: 1px solid #7b8a9b;
+      color: #7b8a9b;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.7rem;
+    }
+
+    .btn-exit:hover {
+      border-color: #ffd166;
+      color: #ffd166;
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Announcement Banner */
+    .announcement-banner {
+      background: linear-gradient(135deg, #1a6bc3, #0d3b5e);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      position: relative;
+      display: none;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+    }
+
+    .announcement-banner.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+
+    .announcement-close {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(27, 38, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(69, 179, 255, 0.2);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffd166;
+    }
+
+    .card-subtitle {
+      font-size: 0.7rem;
+      color: #7b8a9b;
+    }
+
+    /* Announcement Controls */
+    .announce-controls {
+      background: rgba(69, 179, 255, 0.08);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .announce-input-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .announce-input {
+      flex: 1;
+      padding: 0.7rem;
+      background: rgba(13, 27, 42, 0.8);
+      border: 1px solid rgba(69, 179, 255, 0.3);
+      border-radius: 12px;
+      color: #e0e1dd;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .announce-input:focus {
+      border-color: #ffd166;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #45b3ff, #1a6bc3);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(69, 179, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(69, 179, 255, 0.15);
+      border: 1px solid rgba(69, 179, 255, 0.3);
+      color: #45b3ff;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(69, 179, 255, 0.25);
+    }
+
+    .btn-danger {
+      background: rgba(230, 57, 70, 0.2);
+      border: 1px solid rgba(230, 57, 70, 0.3);
+      color: #e63946;
+    }
+
+    .btn-danger:hover {
+      background: rgba(230, 57, 70, 0.3);
+    }
+
+    .quick-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    .quick-btn {
+      background: rgba(13, 27, 42, 0.6);
+      border: 1px solid rgba(69, 179, 255, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+
+    .quick-btn:hover {
+      border-color: #ffd166;
+      color: #ffd166;
+    }
+
+    /* Tables */
+    .participants-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .participants-table th,
+    .participants-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(69, 179, 255, 0.15);
+    }
+
+    .participants-table th {
+      color: #ffd166;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .participants-table td {
+      font-size: 0.85rem;
+    }
+
+    .grade-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .grade-distinction {
+      background: rgba(46, 196, 182, 0.2);
+      color: #2ec4b6;
+      border: 1px solid rgba(46, 196, 182, 0.3);
+    }
+
+    .grade-completed {
+      background: rgba(69, 179, 255, 0.2);
+      color: #45b3ff;
+      border: 1px solid rgba(69, 179, 255, 0.3);
+    }
+
+    .grade-attended {
+      background: rgba(230, 57, 70, 0.2);
+      color: #e63946;
+      border: 1px solid rgba(230, 57, 70, 0.3);
+    }
+
+    .status-joined {
+      color: #2ec4b6;
+    }
+
+    .status-waiting {
+      color: #7b8a9b;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #7b8a9b;
+      font-style: italic;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(69, 179, 255, 0.2);
+      font-size: 0.6rem;
+      color: #5a6e84;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 1rem;
+      }
+      .participants-table th,
+      .participants-table td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <h1>📊 FACILITATOR DASHBOARD</h1>
+    <p>Tara Air 9N-AET | Human Factors Case Study</p>
+  </div>
+  <div>
+    <button class="btn-exit" onclick="exitToJoin()">← Exit to Join Page</button>
+  </div>
+</div>
+
+<div id="announcement-banner" class="announcement-banner">
+  <span id="announcement-text">📢 Facilitator announcement</span>
+  <button class="announcement-close" onclick="dismissAnnouncement()">×</button>
+</div>
+
+<div class="main-container" id="main-container"></div>
+
+<div class="footer">
+  NCAR Part 145 • Human Factors & Decision-Making • 2026
+</div>
+
+<script>
+  // ============================================================
+  // GLOBAL VARIABLES
+  // ============================================================
+  let allParticipants = [];
+  let refreshInterval = null;
+
+  // ============================================================
+  // HELPER FUNCTIONS
+  // ============================================================
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  function getGrade(score) {
+    if (score >= 80) return { name: "Distinction", class: "grade-distinction", icon: "🏆" };
+    if (score >= 70) return { name: "Completed", class: "grade-completed", icon: "✅" };
+    return { name: "Attended", class: "grade-attended", icon: "📋" };
+  }
+
+  function showSuccessMessage(message) {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(46, 196, 182, 0.9); color: #000; padding: 0.5rem 1rem;
+      border-radius: 30px; font-size: 0.8rem; font-weight: 600; z-index: 2000;
+      animation: fadeOut 3s ease forwards;
+    `;
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+  }
+
+  function showAnnouncement(message) {
+    const banner = document.getElementById('announcement-banner');
+    const text = document.getElementById('announcement-text');
+    text.textContent = message;
+    banner.classList.add('show');
+    setTimeout(() => {
+      banner.classList.remove('show');
+    }, 10000);
+  }
+
+  function dismissAnnouncement() {
+    document.getElementById('announcement-banner').classList.remove('show');
+  }
+
+  function sendAnnouncement(message) {
+    if (!message.trim()) return;
+    localStorage.setItem('hf-announcement', JSON.stringify({
+      message: message,
+      timestamp: Date.now()
+    }));
+    showSuccessMessage('Announcement sent to all participants');
+  }
+
+  function checkForAnnouncements() {
+    const saved = localStorage.getItem('hf-announcement');
+    if (saved) {
+      const announcement = JSON.parse(saved);
+      if (Date.now() - announcement.timestamp < 10000) {
+        showAnnouncement(announcement.message);
+        localStorage.removeItem('hf-announcement');
+      }
+    }
+  }
+
+  // ============================================================
+  // DATA MANAGEMENT
+  // ============================================================
+  function loadParticipants() {
+    allParticipants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
+    
+    // Load scores from individual progress
+    allParticipants.forEach(p => {
+      const answers = localStorage.getItem(`tara-answers-${p.id}`);
+      if (answers) {
+        const parsedAnswers = JSON.parse(answers);
+        const totalScore = parsedAnswers.reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
+        p.score = totalScore;
+      } else {
+        p.score = 0;
+      }
+    });
+    
+    // Sort by score descending
+    allParticipants.sort((a, b) => b.score - a.score);
+  }
+
+  function getParticipantProgress(playerId) {
+    const answers = localStorage.getItem(`tara-answers-${playerId}`);
+    if (!answers) return { completed: 0, total: 10, answers: [] };
+    const parsed = JSON.parse(answers);
+    return { completed: parsed.length, total: 10, answers: parsed };
+  }
+
+  // ============================================================
+  // RENDER FUNCTIONS
+  // ============================================================
+  function renderDashboard() {
+    const container = document.getElementById('main-container');
+    loadParticipants();
+    
+    if (allParticipants.length === 0) {
+      container.innerHTML = `
+        <div class="card">
+          <div class="empty-state">
+            📭 No participants have joined yet.<br>
+            Share the link with participants to begin.
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    const totalParticipants = allParticipants.length;
+    const completedCount = allParticipants.filter(p => getParticipantProgress(p.id).completed >= 10).length;
+    const avgScore = Math.round(allParticipants.reduce((sum, p) => sum + p.score, 0) / totalParticipants);
+    
+    let participantsHtml = '';
+    for (const p of allParticipants) {
+      const progress = getParticipantProgress(p.id);
+      const grade = getGrade(p.score);
+      const percentComplete = (progress.completed / 10) * 100;
+      
+      participantsHtml += `
+        <tr>
+          <td>${escapeHtml(p.name)}</td>
+          <td>${p.role || 'Participant'}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span>${progress.completed}/10</span>
+              <div style="flex: 1; height: 6px; background: #2a2e3a; border-radius: 3px; overflow: hidden;">
+                <div style="width: ${percentComplete}%; height: 100%; background: linear-gradient(90deg, #45b3ff, #2ec4b6);"></div>
+              </div>
+            </div>
+          </td>
+          <td><strong>${p.score}</strong> / 100</td>
+          <td><span class="grade-badge ${grade.class}">${grade.icon} ${grade.name}</span></td>
+        </tr>
+      `;
+    }
+    
+    container.innerHTML = `
+      <!-- Announcement Controls -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📢 Send Announcement</span>
+          <span class="card-subtitle">Message appears on all participant screens</span>
+        </div>
+        <div class="announce-controls">
+          <div class="announce-input-group">
+            <input type="text" id="announcement-input" class="announce-input" placeholder="Type your announcement here...">
+            <button class="btn btn-primary" onclick="sendAnnouncementFromInput()">Send</button>
+          </div>
+          <div class="quick-buttons">
+            <button class="quick-btn" onclick="sendQuickAnnouncement('⏰ 5 minutes remaining! Please complete your answers.')">⏰ 5 min warning</button>
+            <button class="quick-btn" onclick="sendQuickAnnouncement('📋 Please move to the next question.')">📋 Next question</button>
+            <button class="quick-btn" onclick="sendQuickAnnouncement('💬 Great discussion points coming up after completion!')">💬 Discussion</button>
+            <button class="quick-btn" onclick="sendQuickAnnouncement('✅ Well done, everyone! Session ending soon.')">✅ Session end</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Statistics Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📊 Session Statistics</span>
+          <span class="card-subtitle">Real-time overview</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div style="text-align: center; padding: 1rem; background: rgba(13, 27, 42, 0.5); border-radius: 16px;">
+            <div style="font-size: 2rem;">👥</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #ffd166;">${totalParticipants}</div>
+            <div style="font-size: 0.7rem;">Participants Joined</div>
+          </div>
+          <div style="text-align: center; padding: 1rem; background: rgba(13, 27, 42, 0.5); border-radius: 16px;">
+            <div style="font-size: 2rem;">✅</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #45b3ff;">${completedCount}</div>
+            <div style="font-size: 0.7rem;">Completed (10/10)</div>
+          </div>
+          <div style="text-align: center; padding: 1rem; background: rgba(13, 27, 42, 0.5); border-radius: 16px;">
+            <div style="font-size: 2rem;">📊</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2ec4b6;">${avgScore}</div>
+            <div style="font-size: 0.7rem;">Average Score</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Participants Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">👥 Participants</span>
+          <span class="card-subtitle">Scores and progress</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="participants-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Progress</th>
+                <th>Score</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${participantsHtml}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="exportResultsCSV()">📄 Export Results (CSV)</button>
+          <button class="btn btn-danger" onclick="resetAllScores()">🔄 Reset All Scores</button>
+          <button class="btn btn-danger" onclick="clearAllParticipants()">🗑️ Clear All Participants</button>
+          <button class="btn btn-secondary" onclick="extendSessionTime()">⏰ Extend Session (+5 min)</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function sendAnnouncementFromInput() {
+    const input = document.getElementById('announcement-input');
+    const message = input.value.trim();
+    if (message) {
+      sendAnnouncement(message);
+      input.value = '';
+    } else {
+      showSuccessMessage('⚠️ Please enter an announcement message');
+    }
+  }
+
+  function sendQuickAnnouncement(message) {
+    sendAnnouncement(message);
+  }
+
+  // ============================================================
+  // ADMIN ACTIONS
+  // ============================================================
+  function exportResultsCSV() {
+    loadParticipants();
+    let csv = "Name,Role,Score,Grade,Completed Questions\n";
+    for (const p of allParticipants) {
+      const progress = getParticipantProgress(p.id);
+      const grade = getGrade(p.score);
+      csv += `"${p.name}",${p.role || 'Participant'},${p.score},"${grade.name}",${progress.completed}/10\n`;
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `tara-air-results-${new Date().toISOString().slice(0,19)}.csv`;
+    a.click();
+    showSuccessMessage('Results exported successfully');
+  }
+
+  function resetAllScores() {
+    if (confirm('⚠️ Reset all participant scores? This cannot be undone.')) {
+      // Clear all answer progress
+      for (const p of allParticipants) {
+        localStorage.removeItem(`tara-answers-${p.id}`);
+      }
+      // Reset participant scores in array
+      allParticipants.forEach(p => p.score = 0);
+      localStorage.setItem('hf-participants', JSON.stringify(allParticipants));
+      showSuccessMessage('All scores have been reset');
+      renderDashboard();
+    }
+  }
+
+  function clearAllParticipants() {
+    if (confirm('⚠️ Remove all participants and their progress? This cannot be undone.')) {
+      // Clear all participant data
+      for (const p of allParticipants) {
+        localStorage.removeItem(`tara-answers-${p.id}`);
+      }
+      localStorage.removeItem('hf-participants');
+      localStorage.removeItem('hf-current-player');
+      showSuccessMessage('All participants have been removed');
+      renderDashboard();
+    }
+  }
+
+  function extendSessionTime() {
+    const currentEnd = localStorage.getItem('hf-session-end-time');
+    let newEnd;
+    if (currentEnd) {
+      newEnd = parseInt(currentEnd) + (5 * 60 * 1000);
+    } else {
+      newEnd = Date.now() + (35 * 60 * 1000);
+    }
+    localStorage.setItem('hf-session-end-time', newEnd);
+    showSuccessMessage('Session extended by 5 minutes');
+  }
+
+  function exitToJoin() {
+    window.location.href = 'index.html';
+  }
+
+  // ============================================================
+  // AUTO REFRESH
+  // ============================================================
+  function refreshData() {
+    renderDashboard();
+    checkForAnnouncements();
+  }
+
+  // ============================================================
+  // INITIALIZATION
+  // ============================================================
+  renderDashboard();
+  refreshInterval = setInterval(refreshData, 5000);
+</script>
+</body>
+</html> 

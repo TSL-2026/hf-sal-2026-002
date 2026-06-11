@@ -1,0 +1,149 @@
+/*
+  ============================================================
+  FILE: assets/screenshots/README.txt
+  VERSION: 1.0
+  DATE: 2026-06-11
+  PURPOSE: Placeholder note — explains the screenshot requirements
+           for PWA store listing and provides instructions for
+           capturing and optimizing screenshots
+  DEPLOYMENT: GitHub Pages + Cloudflare DNS
+  AUTHOR: HF Training Module
+  ============================================================
+*/
+
+============================================================
+SCREENSHOT REQUIREMENTS FOR PWA
+============================================================
+
+The following screenshots are optional but recommended for
+PWA installation and store listing. They appear when users
+attempt to install the app on mobile/desktop devices.
+
+REQUIRED SCREENSHOTS (Optional):
+- landing.png       (1280x720) - Participant join screen
+- question.png      (1280x720) - Case study question view
+
+============================================================
+SCREENSHOT SPECIFICATIONS
+============================================================
+
+| File | Resolution | Format | What to Capture |
+|------|------------|--------|-----------------|
+| landing.png | 1280x720 | PNG | The index.html join screen with name input |
+| question.png | 1280x720 | PNG | A question card with options visible |
+
+============================================================
+HOW TO CAPTURE SCREENSHOTS
+============================================================
+
+Option 1: Browser Developer Tools (Recommended)
+1. Open the app in Chrome/Edge
+2. Press F12 to open Developer Tools
+3. Click the Toggle Device Toolbar icon (Ctrl+Shift+M)
+4. Set dimensions to 1280x720
+5. Navigate to the page you want to capture
+6. Click the three dots menu → Capture screenshot
+
+Option 2: Browser Extension
+1. Install "GoFullPage" or "Awesome Screenshot"
+2. Navigate to the page
+3. Capture full page or visible area
+4. Resize to 1280x720
+
+Option 3: Manual
+1. Resize browser window to approximately 1280x720
+2. Use Snipping Tool (Windows) or Screenshot (Mac)
+3. Save as PNG
+
+============================================================
+WHAT TO INCLUDE IN EACH SCREENSHOT
+============================================================
+
+landing.png (Join Screen):
+- Tara Air 9N-AET logo/header
+- Name input field
+- Start button
+- Info box with 10 questions, 100 points, passing score
+- Clean, inviting, professional
+
+question.png (Question View):
+- Question number and framework
+- Scenario box (if visible)
+- Question text
+- 4 radio button options
+- Submit button
+- Timer display
+- Progress bar
+
+============================================================
+OPTIONAL ADDITIONAL SCREENSHOTS
+============================================================
+
+For better PWA listing, consider adding:
+
+- results.png (Completion screen with score and certificate button)
+- facilitator.png (Facilitator dashboard view)
+- certificate.png (Sample certificate)
+
+To add more screenshots, update manifest.json:
+Under "screenshots" array, add new entries.
+
+============================================================
+MANIFEST.JSON SCREENSHOT REFERENCE
+============================================================
+
+Current manifest.json includes:
+"screenshots": [
+  {
+    "src": "assets/screenshots/landing.png",
+    "sizes": "1280x720",
+    "type": "image/png",
+    "form_factor": "wide",
+    "label": "Participant join screen"
+  },
+  {
+    "src": "assets/screenshots/question.png",
+    "sizes": "1280x720",
+    "type": "image/png",
+    "form_factor": "wide",
+    "label": "Case study question view"
+  }
+]
+
+============================================================
+IMAGE OPTIMIZATION TIPS
+============================================================
+
+1. Use PNG format for screenshots (good quality)
+2. Compress using TinyPNG or Squoosh
+3. Target file size under 300KB each
+4. Keep original screenshots for reference
+5. Avoid including sensitive/personal information
+6. Ensure text is readable at 1280x720
+
+============================================================
+QUICK PLACEHOLDER CREATION (For Testing)
+============================================================
+
+If you need quick placeholder screenshots:
+
+1. Open the app in your browser
+2. Press F12 → Capture screenshot
+3. Save as landing.png and question.png
+4. The app works fine without actual screenshots
+5. For production, replace with clean captures
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+Q: Screenshots not showing during PWA installation?
+A: Check file paths in manifest.json. Files must exist.
+
+Q: Wrong dimensions?
+A: Resize images to exactly 1280x720 before saving.
+
+Q: Blurry text?
+A: Capture at higher resolution (e.g., 2560x1440) then resize.
+
+============================================================

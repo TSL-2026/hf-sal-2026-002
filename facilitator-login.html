@@ -2,29 +2,20 @@
 <!--
   ============================================================
   FILE: facilitator-login.html
-  VERSION: 1.0
+  VERSION: 2.0
   DATE: 2026-06-11
-  PURPOSE: Simple login page for facilitator — authenticates
-           access to the facilitator dashboard. Prevents
-           unauthorized access to participant data.
-  DEPLOYMENT: GitHub Pages + Cloudflare DNS
-  AUTHOR: HF Training Module
+  PURPOSE: Facilitator login with Supabase key activation
   ============================================================
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Facilitator Login | Tara Air Case Study</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facilitator Login | Tara Air</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #0a2a3a 0%, #0d1b2a 50%, #1b263b 100%);
       color: #e0e1dd;
       min-height: 100vh;
@@ -33,235 +24,37 @@
       justify-content: center;
       padding: 2rem;
     }
-
-    .login-container {
-      max-width: 450px;
-      width: 100%;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .logo h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: 1px;
-    }
-
-    .logo .subtitle {
-      font-size: 0.7rem;
-      color: #ffd166;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 0.25rem;
-    }
-
-    .card {
-      background: rgba(27, 38, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(69, 179, 255, 0.25);
-      border-radius: 28px;
-      padding: 2rem;
-      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
-    }
-
-    .card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.25rem;
-      color: #ffffff;
-      text-align: center;
-    }
-
-    .card-sub {
-      font-size: 0.7rem;
-      color: #7b8a9b;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
-      text-align: center;
-    }
-
-    .input-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #ffd166;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 1rem;
-      background: rgba(13, 27, 42, 0.8);
-      border: 1px solid rgba(69, 179, 255, 0.3);
-      border-radius: 14px;
-      color: #e0e1dd;
-      font-size: 1rem;
-      font-family: inherit;
-      outline: none;
-      transition: all 0.2s;
-    }
-
-    .input-group input:focus {
-      border-color: #ffd166;
-      box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2);
-    }
-
-    .btn {
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 1rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      width: 100%;
-      background: linear-gradient(135deg, #45b3ff 0%, #1a6bc3 100%);
-      color: white;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(69, 179, 255, 0.3);
-    }
-
-    .info-box {
-      background: rgba(230, 57, 70, 0.1);
-      border: 1px solid rgba(230, 57, 70, 0.3);
-      border-radius: 12px;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      text-align: center;
-    }
-
-    .info-box p {
-      font-size: 0.7rem;
-      color: #e63946;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.6rem;
-      color: #5a6e84;
-    }
-
-    .footer a {
-      color: #5a6e84;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      color: #ffd166;
-    }
-
-    .error-message {
-      background: rgba(230, 57, 70, 0.2);
-      border: 1px solid rgba(230, 57, 70, 0.3);
-      border-radius: 12px;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #e63946;
-      display: none;
-    }
-
-    .error-message.show {
-      display: block;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .login-container { max-width: 450px; width: 100%; }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo h1 { font-size: 2.5rem; background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .logo .subtitle { font-size: 0.7rem; color: #ffd166; letter-spacing: 2px; text-transform: uppercase; }
+    .card { background: rgba(27,38,59,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(69,179,255,0.25); border-radius: 28px; padding: 2rem; }
+    .card h2 { font-size: 1.5rem; margin-bottom: 0.25rem; color: #ffffff; text-align: center; }
+    .card-sub { font-size: 0.7rem; color: #7b8a9b; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid rgba(69,179,255,0.2); padding-bottom: 0.75rem; }
+    .input-group { margin-bottom: 1.5rem; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 600; color: #ffd166; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .input-group input { width: 100%; padding: 1rem; background: rgba(13,27,42,0.8); border: 1px solid rgba(69,179,255,0.3); border-radius: 14px; color: #e0e1dd; font-size: 1rem; outline: none; }
+    .input-group input:focus { border-color: #ffd166; box-shadow: 0 0 0 3px rgba(255,209,102,0.2); }
+    .btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #45b3ff, #1a6bc3); color: white; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(69,179,255,0.3); }
+    .error-message { background: rgba(230,57,70,0.2); border: 1px solid rgba(230,57,70,0.3); border-radius: 12px; padding: 0.75rem; margin-bottom: 1rem; text-align: center; font-size: 0.8rem; color: #e63946; display: none; }
+    .footer { text-align: center; margin-top: 1.5rem; font-size: 0.6rem; color: #5a6e84; }
+    .footer a { color: #5a6e84; text-decoration: none; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="login-container">
-  <div class="logo">
-    <h1>🔐 FACILITATOR PORTAL</h1>
-    <div class="subtitle">Tara Air 9N-AET • Case Study</div>
-  </div>
-
+  <div class="logo"><h1>🔐 FACILITATOR PORTAL</h1><div class="subtitle">Tara Air 9N-AET</div></div>
   <div class="card">
     <h2>Login to Dashboard</h2>
     <div class="card-sub">Authorized access only</div>
-
-    <div id="error-message" class="error-message">
-      ⚠️ Incorrect password. Please try again.
-    </div>
-
-    <div class="input-group">
-      <label>🔑 ACCESS CODE</label>
-      <input type="password" id="password-input" placeholder="Enter facilitator password" autocomplete="off">
-    </div>
-
+    <div id="error-message" class="error-message">⚠️ Incorrect password. Please try again.</div>
+    <div class="input-group"><label>🔑 ACCESS CODE</label><input type="password" id="password-input" placeholder="Enter facilitator password"></div>
     <button class="btn" onclick="attemptLogin()">▶ ACCESS DASHBOARD</button>
-
-    <div class="info-box">
-      <p>📋 Only authorized facilitators should access this portal.</p>
-    </div>
   </div>
-
-  <div class="footer">
-    <a href="index.html">← Back to Participant Join Page</a> • NCAR Part 145 • 2026
-  </div>
+  <div class="footer"><a href="index.html">← Back to Participant Join Page</a> • 2026</div>
 </div>
-
 <script>
-  // ============================================================
-  // CONFIGURATION
-  // ============================================================
-  // Change this password as needed. For production, use a stronger password.
-  const FACILITATOR_PASSWORD = "tara2026";
-  
-  // Optional: Use environment variable or hash for production.
-  // For this training, a simple password is sufficient.
-
-  function attemptLogin() {
-    const passwordInput = document.getElementById('password-input');
-    const password = passwordInput.value.trim();
-    const errorDiv = document.getElementById('error-message');
-
-    if (password === FACILITATOR_PASSWORD) {
-      // Authentication successful
-      sessionStorage.setItem('facilitator-authenticated', 'true');
-      window.location.href = 'facilitator.html';
-    } else {
-      // Authentication failed
-      errorDiv.classList.add('show');
-      passwordInput.value = '';
-      passwordInput.focus();
-      
-      // Hide error after 3 seconds
-      setTimeout(() => {
-        errorDiv.classList.remove('show');
-      }, 3000);
-    }
-  }
-
-  // Allow Enter key to submit
-  document.getElementById('password-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      attemptLogin();
-    }
-  });
-</script>
-</body>
-</html> 
+  const SUPABASE_URL = 'https://etxkdcrmttopdlasqmqk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGtkY3JtdHRvcGRsYXNxbXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODU5MjAsImV4cCI6MjA5Njc2MTky

@@ -2,12 +2,10 @@
 <!--
   ============================================================
   FILE: casestudy.html
-  VERSION: 2.1
+  VERSION: 3.0
   DATE: 2026-06-11
-  PURPOSE: Interactive case study with Supabase integration
-           Saves participant name, email, score, answers, session_id
-  DEPLOYMENT: GitHub Pages + Cloudflare DNS
-  AUTHOR: Ghanshyam Acharya, Human Factor Trainer
+  PURPOSE: Interactive case study with answer review/edit capability
+           Question grid, previous/next navigation, Supabase sync
   ============================================================
 -->
 <html lang="en">
@@ -46,10 +44,41 @@
     .exit-btn, .cert-btn { background: transparent; border: 1px solid #7b8a9b; color: #7b8a9b; padding: 0.2rem 0.6rem; border-radius: 20px; cursor: pointer; font-size: 0.6rem; margin-left: 0.3rem; }
     .exit-btn:hover, .cert-btn:hover { border-color: #ffd166; color: #ffd166; }
     .main-container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+    
+    /* Question Grid */
+    .question-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      background: rgba(27,38,59,0.5);
+      padding: 0.75rem;
+      border-radius: 16px;
+    }
+    .grid-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(69,179,255,0.3);
+      background: rgba(13,27,42,0.8);
+      color: #e0e1dd;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+    }
+    .grid-btn:hover { transform: scale(1.05); border-color: #ffd166; }
+    .grid-btn.active { background: #45b3ff; color: white; border-color: #45b3ff; }
+    .grid-btn.correct { background: rgba(46,196,182,0.3); border-color: #2ec4b6; color: #2ec4b6; }
+    .grid-btn.incorrect { background: rgba(230,57,70,0.3); border-color: #e63946; color: #e63946; }
+    .grid-btn.not-answered { background: rgba(13,27,42,0.8); border-color: #7b8a9b; color: #7b8a9b; }
+
     .progress-section { background: rgba(27,38,59,0.5); border-radius: 16px; padding: 1rem; margin-bottom: 1.5rem; }
     .progress-bar-container { height: 8px; background: #2a2e3a; border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
     .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #45b3ff, #2ec4b6); transition: width 0.3s ease; }
     .progress-text { font-size: 0.7rem; color: #7b8a9b; text-align: right; }
+
     .question-card { background: rgba(27,38,59,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(69,179,255,0.2); border-radius: 24px; padding: 1.8rem; margin-bottom: 1.5rem; }
     .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(69,179,255,0.2); }
     .question-number { font-size: 0.7rem; color: #ffd166; font-family: monospace; }
@@ -62,8 +91,14 @@
     .option-radio:hover { background: rgba(69,179,255,0.15); }
     .option-radio input { accent-color: #45b3ff; width: 18px; height: 18px; }
     .option-text { font-size: 0.9rem; }
-    .btn-submit { background: linear-gradient(135deg, #45b3ff, #1a6bc3); color: white; border: none; padding: 0.9rem; border-radius: 40px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; transition: all 0.2s; }
+    
+    .nav-buttons { display: flex; gap: 1rem; justify-content: space-between; margin-top: 1rem; }
+    .btn-nav { background: rgba(69,179,255,0.15); border: 1px solid rgba(69,179,255,0.3); color: #45b3ff; padding: 0.7rem 1.5rem; border-radius: 40px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .btn-nav:hover { background: rgba(69,179,255,0.3); transform: translateY(-1px); }
+    .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .btn-submit { background: linear-gradient(135deg, #45b3ff, #1a6bc3); color: white; border: none; padding: 0.9rem; border-radius: 40px; font-weight: 600; font-size: 1rem; cursor: pointer; flex: 2; transition: all 0.2s; }
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(69,179,255,0.3); }
+
     .completion-card { text-align: center; padding: 2rem; }
     .completion-icon { width: 70px; height: 70px; background: rgba(46,196,182,0.15); border: 2px solid #2ec4b6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem; }
     .grade-badge { display: inline-block; padding: 0.3rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; }
@@ -71,8 +106,8 @@
     .grade-completed { background: rgba(69,179,255,0.2); color: #45b3ff; border: 1px solid rgba(69,179,255,0.3); }
     .grade-attended { background: rgba(230,57,70,0.2); color: #e63946; border: 1px solid rgba(230,57,70,0.3); }
     .success-message { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(46,196,182,0.9); color: #000; padding: 0.5rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; z-index: 2000; animation: fadeOut 3s ease forwards; }
-    @keyframes fadeOut { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; } }
-    @media (max-width: 768px) { .main-container { padding: 1rem; } .question-card { padding: 1.2rem; } .question-text { font-size: 1rem; } }
+    @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+    @media (max-width: 768px) { .main-container { padding: 1rem; } .question-card { padding: 1.2rem; } .grid-btn { width: 32px; height: 32px; font-size: 0.8rem; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,45 +115,25 @@
 <body>
 
 <div class="header">
-  <div class="logo">
-    <h1>✈️ TARA AIR 9N-AET | CASE STUDY</h1>
-    <p>Pokhara → Jomsom • 29 May 2022</p>
-  </div>
+  <div class="logo"><h1>✈️ TARA AIR 9N-AET | CASE STUDY</h1><p>Pokhara → Jomsom • 29 May 2022</p></div>
   <div class="player-info">
     <div class="player-name" id="player-name">Loading...</div>
     <div class="player-score" id="player-score">Score: 0 pts</div>
-    <div>
-      <button class="cert-btn" onclick="generateCertificate()">🏆 Certificate</button>
-      <button class="exit-btn" onclick="exitToJoin()">✕ Exit</button>
-    </div>
+    <div><button class="cert-btn" onclick="generateCertificate()">🏆 Certificate</button><button class="exit-btn" onclick="exitToJoin()">✕ Exit</button></div>
   </div>
 </div>
 
 <div class="main-container" id="main-container"></div>
 
 <script>
-  // ============================================================
-  // SUPABASE CONFIGURATION
-  // ============================================================
   const SUPABASE_URL = 'https://etxkdcrmttopdlasqmqk.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGtkY3JtdHRvcGRsYXNxbXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODU5MjAsImV4cCI6MjA5Njc2MTkyMH0.RrLVoHefTpHhhgH1Bc_IhZUGGrmmq9QilqDt-QbE6tk';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Generate or retrieve session ID
-  function getSessionId() {
-    let sessionId = localStorage.getItem('hf-session-id');
-    if (!sessionId) {
-      sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-      localStorage.setItem('hf-session-id', sessionId);
-    }
-    return sessionId;
-  }
+  function getSessionId() { let id = localStorage.getItem('hf-session-id'); if (!id) { id = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8); localStorage.setItem('hf-session-id', id); } return id; }
 
-  // ============================================================
-  // QUESTION DATA (10 Questions x 10 points = 100 points total)
-  // ============================================================
   const QUESTIONS = [
-    { id: 1, framework: "Dirty Dozen (Gordon Dupont)", scenario: "On the CVR, the captain is heard expressing hesitation about the weather. However, a passenger or ground crew member is heard 'advising strongly to the PIC to conduct the flight.' The aircraft departs into deteriorating conditions.", question: "Which Dirty Dozen factor is most clearly at work?", options: ["Pressure", "Complacency", "Lack of assertiveness", "Norms"], correct: 0, points: 10 },
+    { id: 1, framework: "Dirty Dozen (Gordon Dupont)", scenario: "On the CVR, the captain is heard expressing hesitation about the weather. However, a passenger or ground crew member is heard 'advising strongly to the PIC to conduct the flight.'", question: "Which Dirty Dozen factor is most clearly at work?", options: ["Pressure", "Complacency", "Lack of assertiveness", "Norms"], correct: 0, points: 10 },
     { id: 2, framework: "Normalization of Deviance", scenario: "TAWS was intentionally inhibited due to 'nuisance warnings.' Over time, the crew got used to flying without TAWS.", question: "This reflects which human factors concept?", options: ["Plan continuation bias", "Normalization of deviance", "Confirmation bias", "Sunk cost fallacy"], correct: 1, points: 10 },
     { id: 3, framework: "Authority Gradient (CRM)", scenario: "Captain: 17,500 hours. First Officer: 520 hours. Captain assumed most cockpit duties.", question: "What authority gradient issue is most likely at play?", options: ["Gradient too flat", "Gradient too steep", "Gradient optimal", "Gradient reversed"], correct: 1, points: 10 },
     { id: 4, framework: "Situational Awareness (Endsley)", scenario: "Aircraft entered IMC while trying to stay VFR. Crew lost positional awareness.", question: "Which level of SA failed first?", options: ["Level 1 — Perception", "Level 2 — Comprehension", "Level 3 — Projection", "All three"], correct: 2, points: 10 },
@@ -130,168 +145,80 @@
     { id: 10, framework: "The Accident Chain", scenario: "Route economics → Marginal weather policy → No TAWS → Inexperienced FO → Captain hesitation ignored → CFIT.", question: "Where did the accident begin?", options: ["Frontline", "Cockpit", "Executive desk", "Regulator"], correct: 2, points: 10 }
   ];
 
-  let currentPlayer = null;
-  let currentQuestionIndex = 0;
-  let answers = [];
-  let sessionEndTime = null;
-  let sessionTimer = null;
-  let isSessionActive = true;
+  let currentPlayer = null, currentQuestionIndex = 0, answers = [], sessionEndTime = null, sessionTimer = null, isSessionActive = true;
 
   function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
   function showSuccessMessage(msg) { const d = document.createElement('div'); d.className = 'success-message'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 3000); }
   function getGrade(score) { if (score >= 80) return { name: "Completed with Distinction", class: "grade-distinction", icon: "🏆" }; if (score >= 70) return { name: "Completed", class: "grade-completed", icon: "✅" }; return { name: "Attended", class: "grade-attended", icon: "📋" }; }
 
-  function updateScoreDisplay() {
-    const totalScore = answers.reduce((sum, a) => sum + (a.isCorrect ? QUESTIONS[a.questionIndex].points : 0), 0);
-    const grade = getGrade(totalScore);
-    document.getElementById('player-score').innerHTML = `Score: ${totalScore} pts <span style="font-size:0.65rem;">${grade.icon}</span>`;
-    if (currentPlayer) { currentPlayer.score = totalScore; localStorage.setItem('hf-current-player', JSON.stringify(currentPlayer)); }
-  }
+  function calculateTotalScore() { return answers.reduce((sum, a) => sum + (a.isCorrect ? QUESTIONS[a.questionIndex].points : 0), 0); }
+  function updateScoreDisplay() { const totalScore = calculateTotalScore(); const grade = getGrade(totalScore); document.getElementById('player-score').innerHTML = `Score: ${totalScore} pts <span style="font-size:0.65rem;">${grade.icon}</span>`; if (currentPlayer) { currentPlayer.score = totalScore; localStorage.setItem('hf-current-player', JSON.stringify(currentPlayer)); } }
 
-  function startTimer() {
-    if (sessionTimer) clearInterval(sessionTimer);
-    sessionEndTime = localStorage.getItem('hf-session-end-time');
-    if (!sessionEndTime) { sessionEndTime = Date.now() + (30 * 60 * 1000); localStorage.setItem('hf-session-end-time', sessionEndTime); }
-    sessionTimer = setInterval(() => {
-      const timeLeft = sessionEndTime - Date.now();
-      if (timeLeft <= 0 && isSessionActive) { endSession(); }
-      else if (isSessionActive) {
-        const minutes = Math.floor(timeLeft / 60000), seconds = Math.floor((timeLeft % 60000) / 1000);
-        const timerElement = document.getElementById('timer-display');
-        if (timerElement) timerElement.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }
-    }, 1000);
-  }
+  function saveAnswersToLocal() { localStorage.setItem(`tara-answers-${currentPlayer.id}`, JSON.stringify(answers)); updateScoreDisplay(); }
 
+  function startTimer() { if (sessionTimer) clearInterval(sessionTimer); sessionEndTime = localStorage.getItem('hf-session-end-time'); if (!sessionEndTime) { sessionEndTime = Date.now() + (30 * 60 * 1000); localStorage.setItem('hf-session-end-time', sessionEndTime); } sessionTimer = setInterval(() => { const timeLeft = sessionEndTime - Date.now(); if (timeLeft <= 0 && isSessionActive) { endSession(); } else if (isSessionActive) { const minutes = Math.floor(timeLeft / 60000), seconds = Math.floor((timeLeft % 60000) / 1000); const timerElement = document.getElementById('timer-display'); if (timerElement) timerElement.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`; } }, 1000); }
   function endSession() { isSessionActive = false; clearInterval(sessionTimer); renderCompletionScreen(); }
 
-  function loadPlayer() {
-    const saved = localStorage.getItem('hf-current-player');
-    if (!saved) { window.location.href = 'index.html'; return; }
-    currentPlayer = JSON.parse(saved);
-    document.getElementById('player-name').textContent = currentPlayer.name;
-    const savedAnswers = localStorage.getItem(`tara-answers-${currentPlayer.id}`);
-    if (savedAnswers) { answers = JSON.parse(savedAnswers); currentQuestionIndex = answers.length; }
-    const sessionEnd = localStorage.getItem('hf-session-end-time');
-    if (sessionEnd && Date.now() > parseInt(sessionEnd)) { isSessionActive = false; renderCompletionScreen(); }
-    else { startTimer(); renderCurrentQuestion(); }
-  }
+  function loadPlayer() { const saved = localStorage.getItem('hf-current-player'); if (!saved) { window.location.href = 'index.html'; return; } currentPlayer = JSON.parse(saved); document.getElementById('player-name').textContent = currentPlayer.name; const savedAnswers = localStorage.getItem(`tara-answers-${currentPlayer.id}`); if (savedAnswers) { answers = JSON.parse(savedAnswers); } const sessionEnd = localStorage.getItem('hf-session-end-time'); if (sessionEnd && Date.now() > parseInt(sessionEnd)) { isSessionActive = false; renderCompletionScreen(); } else { startTimer(); renderAll(); } }
 
-  function renderProgress() {
+  function getAnswerStatus(idx) { const ans = answers.find(a => a.questionIndex === idx); if (!ans) return 'not-answered'; return ans.isCorrect ? 'correct' : 'incorrect'; }
+
+  function renderQuestionGrid() {
+    let html = '<div class="question-grid">';
+    for (let i = 0; i < QUESTIONS.length; i++) { html += `<button class="grid-btn ${getAnswerStatus(i)} ${currentQuestionIndex === i ? 'active' : ''}" onclick="goToQuestion(${i})">${i+1}</button>`; }
+    html += '</div>';
+    document.getElementById('question-grid')?.remove();
     const pc = document.getElementById('progress-section');
-    if (!pc) return;
-    const percent = (answers.length / QUESTIONS.length) * 100;
-    pc.innerHTML = `<div class="progress-bar-container"><div class="progress-fill" style="width: ${percent}%;"></div></div><div class="progress-text">Questions: ${answers.length}/${QUESTIONS.length} | Score: ${answers.reduce((s,a)=>s+a.pointsEarned,0)}/100</div>`;
+    if (pc) { const gridDiv = document.createElement('div'); gridDiv.id = 'question-grid'; gridDiv.innerHTML = html; pc.parentNode.insertBefore(gridDiv, pc); }
   }
 
-  function renderCurrentQuestion() {
-    const container = document.getElementById('main-container');
-    if (currentQuestionIndex >= QUESTIONS.length) { renderCompletionScreen(); return; }
-    const q = QUESTIONS[currentQuestionIndex];
-    const timeLeft = sessionEndTime ? Math.max(0, Math.floor((sessionEndTime - Date.now()) / 1000)) : 1800;
-    const minutes = Math.floor(timeLeft / 60), seconds = timeLeft % 60;
-    container.innerHTML = `<div class="progress-section" id="progress-section"></div><div class="question-card"><div class="question-header"><span class="question-number">Question ${currentQuestionIndex+1}/${QUESTIONS.length}</span><span class="question-points">${q.points} points</span></div><div class="question-framework">${escapeHtml(q.framework)}</div><div class="scenario-box">📖 ${escapeHtml(q.scenario)}</div><div class="question-text">${escapeHtml(q.question)}</div><div class="options-grid" id="options-grid">${q.options.map((opt, idx) => `<label class="option-radio"><input type="radio" name="answer" value="${idx}"><span class="option-text">${escapeHtml(opt)}</span></label>`).join('')}</div><button class="btn-submit" onclick="submitAnswer()">✓ SUBMIT ANSWER</button></div><div style="text-align:center;margin-top:1rem;"><span class="timer-display" id="timer-display">⏱️ ${minutes}:${seconds.toString().padStart(2,'0')}</span></div>`;
-    renderProgress();
-  }
+  function renderProgress() { const pc = document.getElementById('progress-section'); if (!pc) return; const percent = (answers.filter(a => a !== undefined).length / QUESTIONS.length) * 100; const totalScore = calculateTotalScore(); pc.innerHTML = `<div class="progress-bar-container"><div class="progress-fill" style="width: ${percent}%;"></div></div><div class="progress-text">Questions: ${answers.filter(a => a !== undefined).length}/${QUESTIONS.length} | Score: ${totalScore}/100</div>`; renderQuestionGrid(); }
 
-  window.submitAnswer = function() {
+  function goToQuestion(index) { if (index >= 0 && index < QUESTIONS.length) { currentQuestionIndex = index; renderCurrentQuestion(); } }
+  window.goToQuestion = goToQuestion;
+
+  function submitAnswerAndStay() {
     const selected = document.querySelector('input[name="answer"]:checked');
-    if (!selected) { showSuccessMessage('⚠️ Please select an answer'); return; }
+    if (!selected) { showSuccessMessage('⚠️ Please select an answer'); return false; }
     const selectedIndex = parseInt(selected.value);
     const q = QUESTIONS[currentQuestionIndex];
     const isCorrect = (selectedIndex === q.correct);
     const pointsEarned = isCorrect ? q.points : 0;
-    answers.push({ questionIndex: currentQuestionIndex, questionId: q.id, selectedAnswer: selectedIndex, selectedText: q.options[selectedIndex], isCorrect: isCorrect, pointsEarned: pointsEarned });
-    localStorage.setItem(`tara-answers-${currentPlayer.id}`, JSON.stringify(answers));
-    updateScoreDisplay();
+    const existingIndex = answers.findIndex(a => a.questionIndex === currentQuestionIndex);
+    const newAnswer = { questionIndex: currentQuestionIndex, questionId: q.id, selectedAnswer: selectedIndex, selectedText: q.options[selectedIndex], isCorrect: isCorrect, pointsEarned: pointsEarned };
+    if (existingIndex !== -1) { answers[existingIndex] = newAnswer; } else { answers.push(newAnswer); }
+    saveAnswersToLocal();
     showSuccessMessage(isCorrect ? `✓ Correct! +${pointsEarned} points` : `✗ Incorrect. Correct: ${q.options[q.correct]}`);
-    currentQuestionIndex++;
-    if (currentQuestionIndex >= QUESTIONS.length) renderCompletionScreen(); else renderCurrentQuestion();
-  };
+    renderProgress();
+    updateScoreDisplay();
+    return true;
+  }
 
-  function renderCompletionScreen() {
-    const container = document.getElementById('main-container');
-    const totalScore = answers.reduce((sum, a) => sum + a.pointsEarned, 0);
-    const grade = getGrade(totalScore);
-    let resultsHtml = '';
-    for (let i = 0; i < QUESTIONS.length; i++) {
-      const q = QUESTIONS[i];
-      const ans = answers.find(a => a.questionIndex === i);
-      const isCorrect = ans ? ans.isCorrect : false;
-      resultsHtml += `<div style="background:rgba(13,27,42,0.5);border-radius:12px;padding:1rem;margin-bottom:0.75rem;border-left:3px solid ${isCorrect ? '#2ec4b6' : '#e63946'};"><div style="font-weight:600;">Q${i+1}: ${q.framework}</div><div style="font-size:0.8rem;">Your answer: ${escapeHtml(ans ? ans.selectedText : 'Not answered')}</div><div style="font-size:0.75rem;color:${isCorrect ? '#2ec4b6' : '#e63946'};">${isCorrect ? '✓ Correct' : '✗ Incorrect'} (${ans ? ans.pointsEarned : 0}/${q.points} points)</div></div>`;
-    }
+  window.submitAnswer = function() { if (submitAnswerAndStay()) { if (currentQuestionIndex + 1 < QUESTIONS.length) { currentQuestionIndex++; renderCurrentQuestion(); } else { renderCompletionScreen(); } } };
+
+  window.previousQuestion = function() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderCurrentQuestion(); } };
+  window.nextQuestion = function() { if (currentQuestionIndex + 1 < QUESTIONS.length) { currentQuestionIndex++; renderCurrentQuestion(); } };
+
+  function renderCurrentQuestion() {
+    const container = document.getElementById('main-container'); if (!container) return;
+    const q = QUESTIONS[currentQuestionIndex]; const existing = answers.find(a => a.questionIndex === currentQuestionIndex);
+    const timeLeft = sessionEndTime ? Math.max(0, Math.floor((sessionEndTime - Date.now()) / 1000)) : 1800;
+    const minutes = Math.floor(timeLeft / 60), seconds = timeLeft % 60;
+    let optionsHtml = '';
+    q.options.forEach((opt, idx) => { const checked = existing && existing.selectedAnswer === idx ? 'checked' : ''; optionsHtml += `<label class="option-radio"><input type="radio" name="answer" value="${idx}" ${checked}><span class="option-text">${escapeHtml(opt)}</span></label>`; });
+    container.innerHTML = `<div class="progress-section" id="progress-section"></div><div class="question-card"><div class="question-header"><span class="question-number">Question ${currentQuestionIndex+1}/${QUESTIONS.length}</span><span class="question-points">${q.points} points</span></div><div class="question-framework">${escapeHtml(q.framework)}</div><div class="scenario-box">📖 ${escapeHtml(q.scenario)}</div><div class="question-text">${escapeHtml(q.question)}</div><div class="options-grid" id="options-grid">${optionsHtml}</div><div class="nav-buttons"><button class="btn-nav" onclick="previousQuestion()" ${currentQuestionIndex === 0 ? 'disabled' : ''}>◀ PREVIOUS</button><button class="btn-submit" onclick="submitAnswer()">✓ SUBMIT ANSWER</button><button class="btn-nav" onclick="nextQuestion()" ${currentQuestionIndex + 1 >= QUESTIONS.length ? 'disabled' : ''}>NEXT ▶</button></div></div><div style="text-align:center;margin-top:1rem;"><span class="timer-display" id="timer-display">⏱️ ${minutes}:${seconds.toString().padStart(2,'0')}</span></div>`;
+    renderProgress();
+  }
+
+  function renderAll() { if (answers.length === QUESTIONS.length) renderCompletionScreen(); else renderCurrentQuestion(); }
+
+  function renderCompletionScreen() { endSession(); const container = document.getElementById('main-container'); const totalScore = calculateTotalScore(); const grade = getGrade(totalScore); let resultsHtml = ''; for (let i = 0; i < QUESTIONS.length; i++) { const q = QUESTIONS[i]; const ans = answers.find(a => a.questionIndex === i); const isCorrect = ans ? ans.isCorrect : false; resultsHtml += `<div style="background:rgba(13,27,42,0.5);border-radius:12px;padding:1rem;margin-bottom:0.75rem;border-left:3px solid ${isCorrect ? '#2ec4b6' : '#e63946'};"><div style="font-weight:600;">Q${i+1}: ${q.framework}</div><div style="font-size:0.8rem;">Your answer: ${escapeHtml(ans ? ans.selectedText : 'Not answered')}</div><div style="font-size:0.75rem;color:${isCorrect ? '#2ec4b6' : '#e63946'};">${isCorrect ? '✓ Correct' : '✗ Incorrect'} (${ans ? ans.pointsEarned : 0}/${q.points} points)</div></div>`; }
     container.innerHTML = `<div class="question-card completion-card"><div class="completion-icon">✓</div><h2>Case Study Complete!</h2><p style="color:#7b8a9b;">You have completed all 10 questions.</p><div style="background:rgba(69,179,255,0.1);padding:1.5rem;border-radius:16px;margin:1.5rem 0;"><div style="font-size:1.8rem;font-weight:700;color:#ffd166;">${totalScore} / 100 points</div><div class="grade-badge ${grade.class}" style="font-size:1rem;margin-top:0.5rem;">${grade.icon} ${grade.name}</div></div><div style="max-height:400px;overflow-y:auto;margin-bottom:1.5rem;text-align:left;">${resultsHtml}</div><div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;"><button class="btn-submit" style="width:auto;padding:0.8rem 1.5rem;" onclick="generateCertificate()">🏆 Download Certificate</button><button class="btn-submit" style="width:auto;padding:0.8rem 1.5rem;background:#7b8a9b;" onclick="exitToJoin()">📋 Exit to Home</button></div></div>`;
   }
 
-  // ============================================================
-  // SAVE TO SUPABASE (WITH EMAIL)
-  // ============================================================
-  async function saveToSupabase(participantName, participantEmail, totalScore, answersArray) {
-    try {
-      const sessionId = getSessionId();
-      await supabase.rpc('set_app_session', { session_id: sessionId });
-      
-      const { error } = await supabase.from('participants').insert([{
-        name: participantName,
-        email: participantEmail,
-        score: totalScore,
-        answers: answersArray,
-        session_id: sessionId,
-        completed_at: new Date().toISOString(),
-        device_info: navigator.userAgent
-      }]);
-      
-      if (error) console.error('Supabase error:', error);
-      else console.log('Saved to Supabase successfully');
-    } catch (err) { console.error('Error saving to Supabase:', err); }
-  }
+  async function saveToSupabase(participantName, participantEmail, totalScore, answersArray) { try { const sessionId = getSessionId(); await supabase.rpc('set_app_session', { session_id: sessionId }); const { error } = await supabase.from('participants').insert([{ name: participantName, email: participantEmail, score: totalScore, answers: answersArray, session_id: sessionId, completed_at: new Date().toISOString(), device_info: navigator.userAgent }]); if (error) console.error('Supabase error:', error); else console.log('Saved to Supabase'); } catch (err) { console.error('Error saving to Supabase:', err); } }
 
-  // ============================================================
-  // CERTIFICATE GENERATION (with email saved to Supabase)
-  // ============================================================
-  window.generateCertificate = async function() {
-    const totalScore = answers.reduce((sum, a) => sum + a.pointsEarned, 0);
-    const grade = getGrade(totalScore);
-    const playerName = currentPlayer ? currentPlayer.name : 'Participant';
-    const playerEmail = currentPlayer ? currentPlayer.email : null;
-    
-    // Save to Supabase (includes email)
-    await saveToSupabase(playerName, playerEmail, totalScore, answers);
-    
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    doc.setFillColor(10, 42, 58); doc.rect(0, 0, 297, 210, 'F');
-    doc.setFillColor(69, 179, 255); doc.rect(0, 0, 297, 5, 'F'); doc.rect(0, 205, 297, 5, 'F');
-    doc.setDrawColor(255, 209, 102); doc.setLineWidth(1.5); doc.rect(10, 10, 277, 190);
-    doc.setDrawColor(69, 179, 255); doc.setLineWidth(0.5); doc.rect(13, 13, 271, 184);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(26); doc.setTextColor(255, 209, 102);
-    doc.text('CERTIFICATE OF COMPLETION', 148.5, 45, { align: 'center' });
-    doc.setFontSize(10); doc.setTextColor(69, 179, 255);
-    doc.text('Tara Air 9N-AET Human Factors Case Study', 148.5, 60, { align: 'center' });
-    doc.text('CAAN Mandatory Training', 148.5, 68, { align: 'center' });
-    doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-    doc.text('This certificate is presented to', 148.5, 92, { align: 'center' });
-    doc.setFontSize(24); doc.setTextColor(255, 209, 102);
-    doc.text(playerName, 148.5, 112, { align: 'center' });
-    doc.setFontSize(11); doc.setTextColor(255, 255, 255);
-    doc.text('for successful completion of the', 148.5, 132, { align: 'center' });
-    doc.setFontSize(12); doc.setTextColor(69, 179, 255);
-    doc.text('Tara Air 9N-AET Human Factors Case Study', 148.5, 145, { align: 'center' });
-    doc.setFontSize(13); doc.setTextColor(255, 209, 102);
-    const gradeText = grade.name === 'Completed with Distinction' ? 'DISTINCTION' : grade.name === 'Completed' ? 'COMPLETED' : 'ATTENDED';
-    doc.text(`${gradeText} — ${totalScore}/100 points`, 148.5, 162, { align: 'center' });
-    
-    const sigY = 182;
-    doc.setDrawColor(255, 209, 102); doc.setLineWidth(0.5); doc.line(95, sigY, 202, sigY);
-    doc.setFont('helvetica', 'italic'); doc.setFontSize(14); doc.setTextColor(255, 209, 102);
-    doc.text('Ghanshyam Acharya', 148.5, sigY + 6, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(123, 138, 155);
-    doc.text('Instructor', 148.5, sigY + 14, { align: 'center' });
-    doc.setFontSize(8); doc.setTextColor(123, 138, 155);
-    doc.text(`Issue Date: ${new Date().toLocaleDateString('en-GB')}`, 148.5, sigY + 24, { align: 'center' });
-    doc.setFontSize(6); doc.text('Training is not completion. Application is completion.', 148.5, 203, { align: 'center' });
-    doc.save(`Certificate_${playerName.replace(/[^a-z0-9]/gi, '_')}.pdf`);
-  };
+  window.generateCertificate = async function() { const totalScore = calculateTotalScore(); const grade = getGrade(totalScore); const playerName = currentPlayer ? currentPlayer.name : 'Participant'; const playerEmail = currentPlayer ? currentPlayer.email : null; await saveToSupabase(playerName, playerEmail, totalScore, answers); const { jsPDF } = window.jspdf; const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }); doc.setFillColor(10,42,58); doc.rect(0,0,297,210,'F'); doc.setFillColor(69,179,255); doc.rect(0,0,297,5,'F'); doc.rect(0,205,297,5,'F'); doc.setDrawColor(255,209,102); doc.setLineWidth(1.5); doc.rect(10,10,277,190); doc.setDrawColor(69,179,255); doc.setLineWidth(0.5); doc.rect(13,13,271,184); doc.setFont('helvetica','bold'); doc.setFontSize(26); doc.setTextColor(255,209,102); doc.text('CERTIFICATE OF COMPLETION',148.5,45,{align:'center'}); doc.setFontSize(10); doc.setTextColor(69,179,255); doc.text('Tara Air 9N-AET Human Factors Case Study',148.5,60,{align:'center'}); doc.text('CAAN Mandatory Training',148.5,68,{align:'center'}); doc.setFontSize(14); doc.setTextColor(255,255,255); doc.text('This certificate is presented to',148.5,92,{align:'center'}); doc.setFontSize(24); doc.setTextColor(255,209,102); doc.text(playerName,148.5,112,{align:'center'}); doc.setFontSize(11); doc.setTextColor(255,255,255); doc.text('for successful completion of the',148.5,132,{align:'center'}); doc.setFontSize(12); doc.setTextColor(69,179,255); doc.text('Tara Air 9N-AET Human Factors Case Study',148.5,145,{align:'center'}); doc.setFontSize(13); doc.setTextColor(255,209,102); const gradeText = grade.name === 'Completed with Distinction' ? 'DISTINCTION' : grade.name === 'Completed' ? 'COMPLETED' : 'ATTENDED'; doc.text(`${gradeText} — ${totalScore}/100 points`,148.5,162,{align:'center'}); const sigY = 182; doc.setDrawColor(255,209,102); doc.setLineWidth(0.5); doc.line(95,sigY,202,sigY); doc.setFont('helvetica','italic'); doc.setFontSize(14); doc.setTextColor(255,209,102); doc.text('Ghanshyam Acharya',148.5,sigY+6,{align:'center'}); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(123,138,155); doc.text('Instructor',148.5,sigY+14,{align:'center'}); doc.setFontSize(8); doc.setTextColor(123,138,155); doc.text(`Issue Date: ${new Date().toLocaleDateString('en-GB')}`,148.5,sigY+24,{align:'center'}); doc.setFontSize(6); doc.text('Training is not completion. Application is completion.',148.5,203,{align:'center'}); doc.save(`Certificate_${playerName.replace(/[^a-z0-9]/gi,'_')}.pdf`); };
 
   window.exitToJoin = function() { if (confirm('Exit? Progress saved.')) window.location.href = 'index.html'; };
   loadPlayer();

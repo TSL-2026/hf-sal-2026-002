@@ -12,88 +12,240 @@
       color: #e0e1dd;
       min-height: 100vh;
     }
-    .header { background: rgba(13,27,42,0.95); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .header {
+      background: rgba(13,27,42,0.95);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
     .logo h1 { font-size: 1.3rem; background: linear-gradient(135deg, #fff 0%, #45b3ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .logo p { font-size: 0.6rem; color: #7b8a9b; }
     .btn-exit { background: transparent; border: 1px solid #7b8a9b; color: #7b8a9b; padding: 0.3rem 1rem; border-radius: 20px; cursor: pointer; }
-    .main-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .btn-exit:hover { border-color: #ffd166; color: #ffd166; }
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
     .card { background: rgba(27,38,59,0.7); border: 1px solid rgba(69,179,255,0.2); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .card-header { display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(69,179,255,0.2); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(69,179,255,0.2); flex-wrap: wrap; gap: 0.5rem; }
     .card-title { font-size: 1.2rem; font-weight: 600; color: #ffd166; }
+    .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .stat-box { background: rgba(13,27,42,0.5); border-radius: 16px; padding: 0.75rem 1.5rem; text-align: center; }
+    .stat-number { font-size: 1.5rem; font-weight: 700; color: #ffd166; }
+    .stat-label { font-size: 0.65rem; color: #7b8a9b; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(69,179,255,0.2); }
-    th { color: #ffd166; font-size: 0.7rem; text-transform: uppercase; }
-    .grade-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.65rem; }
-    .grade-distinction { background: rgba(46,196,182,0.2); color: #2ec4b6; }
-    .grade-completed { background: rgba(69,179,255,0.2); color: #45b3ff; }
-    .grade-attended { background: rgba(230,57,70,0.2); color: #e63946; }
+    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(69,179,255,0.15); vertical-align: top; }
+    th { color: #ffd166; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { font-size: 0.8rem; }
+    .grade-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600; }
+    .grade-distinction { background: rgba(46,196,182,0.2); color: #2ec4b6; border: 1px solid rgba(46,196,182,0.3); }
+    .grade-completed { background: rgba(69,179,255,0.2); color: #45b3ff; border: 1px solid rgba(69,179,255,0.3); }
+    .grade-attended { background: rgba(230,57,70,0.2); color: #e63946; border: 1px solid rgba(230,57,70,0.3); }
+    .answer-preview { font-size: 0.7rem; color: #7b8a9b; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .empty-state { text-align: center; padding: 2rem; color: #7b8a9b; }
-    .btn { background: rgba(69,179,255,0.15); border: 1px solid rgba(69,179,255,0.3); color: #45b3ff; padding: 0.5rem 1rem; border-radius: 30px; cursor: pointer; margin-right: 0.5rem; }
+    .btn { background: rgba(69,179,255,0.15); border: 1px solid rgba(69,179,255,0.3); color: #45b3ff; padding: 0.5rem 1rem; border-radius: 30px; cursor: pointer; margin-right: 0.5rem; transition: all 0.2s; }
+    .btn:hover { background: rgba(69,179,255,0.3); transform: translateY(-1px); }
+    .btn-danger { background: rgba(230,57,70,0.15); border-color: rgba(230,57,70,0.3); color: #e63946; }
+    .btn-danger:hover { background: rgba(230,57,70,0.3); }
+    .loading { text-align: center; padding: 2rem; }
+    .footer { text-align: center; margin-top: 1.5rem; font-size: 0.6rem; color: #5a6e84; }
+    @media (max-width: 768px) { .main-container { padding: 1rem; } th, td { padding: 0.5rem; font-size: 0.7rem; } }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="header">
-  <div class="logo"><h1>📊 HUMAN FACTOR CASE STUDY</h1><p>Tara Air 9N-AET | Facilitator Dashboard</p></div>
+  <div class="logo">
+    <h1>📊 HUMAN FACTOR CASE STUDY</h1>
+    <p>Tara Air 9N-AET | Facilitator Dashboard (Supabase)</p>
+  </div>
   <button class="btn-exit" onclick="logout()">← Logout</button>
 </div>
 <div class="main-container" id="main-container">
   <div class="card">
-    <div class="card-header"><span class="card-title">📋 Participant Results</span></div>
-    <div id="participants-list">
-      <div class="empty-state">Loading participants from localStorage...</div>
+    <div class="card-header">
+      <span class="card-title">📋 Participant Results</span>
+      <div>
+        <button class="btn" onclick="exportCSV()">📄 Export CSV</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+        <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+      </div>
     </div>
-    <div style="margin-top: 1rem;">
-      <button class="btn" onclick="exportCSV()">📄 Export CSV</button>
-      <button class="btn" onclick="clearAll()">🗑️ Clear All Data</button>
+    <div id="participants-list">
+      <div class="loading">⏳ Loading participants from Supabase...</div>
     </div>
   </div>
+  <div class="footer">
+    Data stored in Supabase cloud • All participants across all devices visible here
+  </div>
 </div>
-<script>
-  function getGrade(score) { if (score >= 80) return { name: "Distinction", class: "grade-distinction", icon: "🏆" }; if (score >= 70) return { name: "Completed", class: "grade-completed", icon: "✅" }; return { name: "Attended", class: "grade-attended", icon: "📋" }; }
 
-  function loadParticipants() {
-    let participants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
-    let container = document.getElementById('participants-list');
-    if (participants.length === 0) {
-      container.innerHTML = '<div class="empty-state">No participants have joined yet.</div>';
-      return;
-    }
-    let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Score</th><th>Grade</th><th>Joined</th></tr></thead><tbody>';
-    participants.forEach(p => {
-      let grade = getGrade(p.score || 0);
-      html += `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.email || '-')}</td><td><strong>${p.score || 0}</strong> / 100</td><td><span class="grade-badge ${grade.class}">${grade.icon} ${grade.name}</span></td><td>${new Date(p.joinedAt).toLocaleString()}</td></tr>`;
-    });
-    html += '</tbody></table>';
-    container.innerHTML = html;
+<script>
+  // ========== SUPABASE CONFIGURATION ==========
+  const SUPABASE_URL = 'https://etxkdcrmttopdlasqmqk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGtkY3JtdHRvcGRsYXNxbXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODU5MjAsImV4cCI6MjA5Njc2MTkyMH0.RrLVoHefTpHhhgH1Bc_IhZUGGrmmq9QilqDt-QbE6tk';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let allParticipants = [];
+
+  // ========== HELPER FUNCTIONS ==========
+  function getGrade(score) {
+    if (score >= 80) return { name: "Distinction", class: "grade-distinction", icon: "🏆" };
+    if (score >= 70) return { name: "Completed", class: "grade-completed", icon: "✅" };
+    return { name: "Attended", class: "grade-attended", icon: "📋" };
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+      return new Date(dateStr).toLocaleString();
+    } catch { return dateStr; }
+  }
+
+  // ========== LOAD PARTICIPANTS FROM SUPABASE ==========
+  async function loadParticipants() {
+    const container = document.getElementById('participants-list');
+    container.innerHTML = '<div class="loading">⏳ Loading participants from Supabase...</div>';
+    
+    try {
+      // Set facilitator key to bypass RLS
+      await supabase.rpc('set_facilitator_key', { key_value: 'tara-facilitator-2026-secret' });
+      
+      const { data, error } = await supabase
+        .from('participants')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        container.innerHTML = `<div class="empty-state">❌ Error loading data: ${error.message}<br><br>Make sure the set_facilitator_key function exists in Supabase.</div>`;
+        return;
+      }
+      
+      allParticipants = data || [];
+      
+      if (allParticipants.length === 0) {
+        container.innerHTML = '<div class="empty-state">📭 No participants have completed the case study yet.<br><br>Data will appear here once participants generate their certificates.</div>';
+        return;
+      }
+      
+      // Calculate statistics
+      const totalScore = allParticipants.reduce((sum, p) => sum + (p.score || 0), 0);
+      const avgScore = Math.round(totalScore / allParticipants.length);
+      const distinctionCount = allParticipants.filter(p => (p.score || 0) >= 80).length;
+      const completedCount = allParticipants.filter(p => (p.score || 0) >= 70).length;
+      
+      // Build table
+      let tableHtml = `
+        <div class="stats">
+          <div class="stat-box"><div class="stat-number">${allParticipants.length}</div><div class="stat-label">Total Participants</div></div>
+          <div class="stat-box"><div class="stat-number">${avgScore}</div><div class="stat-label">Average Score</div></div>
+          <div class="stat-box"><div class="stat-number">${distinctionCount}</div><div class="stat-label">Distinction (80+)</div></div>
+          <div class="stat-box"><div class="stat-number">${completedCount}</div><div class="stat-label">Completed (70+)</div></div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Completed On</th>
+                <th>Session ID</th>
+               </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      for (const p of allParticipants) {
+        const grade = getGrade(p.score || 0);
+        tableHtml += `
+          <tr>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.email || '-')}</td>
+            <td><strong style="color:#ffd166;">${p.score || 0}</strong> / 100</td>
+            <td><span class="grade-badge ${grade.class}">${grade.icon} ${grade.name}</span></td>
+            <td>${formatDate(p.completed_at)}</td>
+            <td style="font-family: monospace; font-size: 0.7rem;">${escapeHtml(p.session_id?.substring(0, 20) || '-')}...</td>
+          </tr>
+        `;
+      }
+      
+      tableHtml += '</tbody></table></div>';
+      container.innerHTML = tableHtml;
+      
+    } catch (err) {
+      console.error('Error:', err);
+      container.innerHTML = `<div class="empty-state">❌ Connection error: ${err.message}<br><br>Please check Supabase connection.</div>`;
+    }
+  }
+
+  // ========== EXPORT CSV ==========
   function exportCSV() {
-    let participants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
-    let csv = "Name,Email,Score,Grade,Joined\n";
-    participants.forEach(p => {
-      let grade = getGrade(p.score || 0).name;
-      csv += `"${p.name}","${p.email || ''}",${p.score || 0},"${grade}","${p.joinedAt}"\n`;
-    });
-    let blob = new Blob([csv], { type: 'text/csv' });
-    let a = document.createElement('a');
+    if (allParticipants.length === 0) {
+      alert('No data to export.');
+      return;
+    }
+    
+    let csv = "Name,Email,Score,Grade,Completed At,Session ID\n";
+    for (const p of allParticipants) {
+      const grade = getGrade(p.score || 0).name;
+      csv += `"${escapeHtml(p.name)}","${escapeHtml(p.email || '')}",${p.score || 0},"${grade}","${p.completed_at || ''}","${p.session_id || ''}"\n`;
+    }
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `participants_${new Date().toISOString().slice(0,19)}.csv`;
+    a.download = `participants_${new Date().toISOString().slice(0, 19)}.csv`;
     a.click();
   }
 
-  function clearAll() {
-    if (confirm('⚠️ Delete ALL participant data? This cannot be undone.')) {
-      localStorage.removeItem('hf-participants');
-      localStorage.removeItem('hf-current-player');
+  // ========== CLEAR ALL DATA (Supabase) ==========
+  async function clearAllData() {
+    if (!confirm('⚠️ WARNING: This will DELETE ALL participant records from Supabase. This cannot be undone. Continue?')) return;
+    if (!confirm('Type "DELETE" to confirm:')) return;
+    
+    try {
+      await supabase.rpc('set_facilitator_key', { key_value: 'tara-facilitator-2026-secret' });
+      const { error } = await supabase.from('participants').delete().neq('id', 0);
+      if (error) throw error;
+      alert('✅ All participant data has been deleted from Supabase.');
       loadParticipants();
-      alert('All participant data cleared.');
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Error deleting data: ' + err.message);
     }
   }
 
-  function logout() { window.location.href = 'index.html'; }
-  function escapeHtml(s) { return s ? s.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;') : ''; }
+  // ========== REFRESH ==========
+  function refreshData() {
+    loadParticipants();
+  }
 
+  // ========== LOGOUT ==========
+  function logout() {
+    sessionStorage.removeItem('facilitator-authenticated');
+    window.location.href = 'index.html';
+  }
+
+  // ========== CHECK AUTHENTICATION ==========
+  function checkAuth() {
+    const isAuth = sessionStorage.getItem('facilitator-authenticated');
+    if (!isAuth || isAuth !== 'true') {
+      window.location.href = 'facilitator-login.html';
+    }
+  }
+
+  // ========== INITIALIZE ==========
+  checkAuth();
   loadParticipants();
-  setInterval(loadParticipants, 5000);
+  setInterval(loadParticipants, 10000); // Auto-refresh every 10 seconds
 </script>
 </body>
 </html>

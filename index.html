@@ -2,10 +2,9 @@
 <!--
   ============================================================
   FILE: index.html
-  VERSION: 1.4
-  DATE: 2026-06-11
-  PURPOSE: Landing page — participant enters name and email,
-           views investigation abstract modal, then starts case study
+  VERSION: 2.1
+  DATE: 2026-06-12
+  PURPOSE: Landing page — modal now 90% of screen size
   ============================================================
 -->
 <html lang="en">
@@ -14,14 +13,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Human Factor Case Study | Tara Air 9N-AET</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #0a2a3a 0%, #0d1b2a 50%, #1b263b 100%);
       color: #e0e1dd;
       min-height: 100vh;
@@ -30,140 +24,26 @@
       justify-content: center;
       padding: 2rem;
     }
+    .join-container { max-width: 550px; width: 100%; }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo h1 { font-size: 2.5rem; background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .logo .subtitle { font-size: 1rem; color: #ffd166; margin-top: 0.25rem; }
+    .logo .date { font-size: 0.6rem; color: #7b8a9b; margin-top: 0.5rem; }
+    .card { background: rgba(27,38,59,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(69,179,255,0.25); border-radius: 28px; padding: 2rem; }
+    .card h2 { font-size: 1.5rem; margin-bottom: 0.25rem; color: #fff; }
+    .card-sub { font-size: 0.7rem; color: #7b8a9b; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(69,179,255,0.2); }
+    .input-group { margin-bottom: 1.5rem; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 600; color: #ffd166; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .input-group input { width: 100%; padding: 1rem; background: rgba(13,27,42,0.8); border: 1px solid rgba(69,179,255,0.3); border-radius: 14px; color: #e0e1dd; font-size: 1rem; outline: none; }
+    .input-group input:focus { border-color: #ffd166; box-shadow: 0 0 0 3px rgba(255,209,102,0.2); }
+    .btn { font-size: 1.3rem; font-weight: 700; letter-spacing: 2px; padding: 1rem; border: none; border-radius: 50px; cursor: pointer; width: 100%; background: linear-gradient(135deg, #45b3ff, #1a6bc3); color: white; text-transform: uppercase; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(69,179,255,0.3); }
+    .info-box { background: rgba(69,179,255,0.08); border: 1px solid rgba(69,179,255,0.2); border-radius: 16px; padding: 1rem; margin-top: 1.5rem; text-align: center; }
+    .info-box p { font-size: 0.75rem; color: #a0b0c0; }
+    .info-box strong { color: #ffd166; }
+    .footer { text-align: center; margin-top: 1.5rem; font-size: 0.65rem; color: #8a9bb5; }
 
-    .join-container {
-      max-width: 550px;
-      width: 100%;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .logo h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(135deg, #ffffff 0%, #45b3ff 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: 1px;
-    }
-
-    .logo .subtitle {
-      font-size: 1rem;
-      color: #ffd166;
-      letter-spacing: 1px;
-      margin-top: 0.25rem;
-      font-weight: 500;
-    }
-
-    .logo .date {
-      font-size: 0.6rem;
-      color: #7b8a9b;
-      margin-top: 0.5rem;
-    }
-
-    .card {
-      background: rgba(27, 38, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(69, 179, 255, 0.25);
-      border-radius: 28px;
-      padding: 2rem;
-      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
-    }
-
-    .card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.25rem;
-      color: #ffffff;
-    }
-
-    .card-sub {
-      font-size: 0.7rem;
-      color: #7b8a9b;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
-    }
-
-    .input-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #ffd166;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 1rem;
-      background: rgba(13, 27, 42, 0.8);
-      border: 1px solid rgba(69, 179, 255, 0.3);
-      border-radius: 14px;
-      color: #e0e1dd;
-      font-size: 1rem;
-      font-family: inherit;
-      outline: none;
-      transition: all 0.2s;
-    }
-
-    .input-group input:focus {
-      border-color: #ffd166;
-      box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2);
-    }
-
-    .btn {
-      font-size: 1.3rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      padding: 1rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      width: 100%;
-      background: linear-gradient(135deg, #45b3ff 0%, #1a6bc3 100%);
-      color: white;
-      transition: all 0.2s;
-      text-transform: uppercase;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(69, 179, 255, 0.3);
-    }
-
-    .info-box {
-      background: rgba(69, 179, 255, 0.08);
-      border: 1px solid rgba(69, 179, 255, 0.2);
-      border-radius: 16px;
-      padding: 1rem;
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .info-box p {
-      font-size: 0.75rem;
-      color: #a0b0c0;
-    }
-
-    .info-box strong {
-      color: #ffd166;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.65rem;
-      color: #8a9bb5;
-    }
-
+    /* MODAL - 90% of screen size */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -176,88 +56,43 @@
       justify-content: center;
       z-index: 2000;
     }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
+    .modal-overlay.open { display: flex; }
     .modal {
       background: #1b263b;
-      border: 1px solid rgba(69, 179, 255, 0.3);
+      border: 1px solid rgba(69,179,255,0.3);
       border-radius: 24px;
-      max-width: 600px;
       width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
+      max-width: 900px;
+      height: 90%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-
     .modal-header {
-      padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid rgba(69, 179, 255, 0.2);
-      font-size: 1.2rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(69,179,255,0.2);
       font-weight: 600;
       color: #ffd166;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
-
-    .modal-header h3 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: #7b8a9b;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    .modal-close:hover {
-      color: #ffd166;
-    }
-
+    .modal-header h3 { margin: 0; font-size: 1.2rem; }
+    .modal-close { background: none; border: none; color: #7b8a9b; font-size: 1.5rem; cursor: pointer; }
+    .modal-close:hover { color: #ffd166; }
     .modal-body {
       padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
     }
-
-    .modal-body h4 {
-      color: #45b3ff;
-      margin: 1rem 0 0.5rem 0;
-    }
-
-    .modal-body h4:first-child {
-      margin-top: 0;
-    }
-
-    .modal-body p {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: #e0e1dd;
-      margin-bottom: 1rem;
-    }
-
-    .modal-body ul {
-      margin: 0.5rem 0 1rem 1.5rem;
-    }
-
-    .modal-body li {
-      font-size: 0.85rem;
-      line-height: 1.5;
-      margin-bottom: 0.5rem;
-      color: #c0c8d8;
-    }
-
-    .key-finding {
-      background: rgba(230, 57, 70, 0.15);
-      border-left: 3px solid #e63946;
-      padding: 0.75rem;
-      margin: 1rem 0;
-      border-radius: 8px;
-    }
-
+    .modal-body h4 { color: #45b3ff; margin: 1rem 0 0.5rem 0; }
+    .modal-body h4:first-child { margin-top: 0; }
+    .modal-body p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
+    .modal-body ul { margin: 0.5rem 0 1rem 1.5rem; }
+    .modal-body li { font-size: 0.85rem; margin-bottom: 0.5rem; color: #c0c8d8; }
+    .key-finding { background: rgba(230,57,70,0.15); border-left: 3px solid #e63946; padding: 0.75rem; margin: 1rem 0; border-radius: 8px; }
     .btn-continue {
       background: linear-gradient(135deg, #2ec4b6, #1a8a7a);
       color: white;
@@ -270,11 +105,7 @@
       width: 100%;
       margin-top: 1rem;
     }
-
-    .btn-continue:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(46, 196, 182, 0.3);
-    }
+    .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(46,196,182,0.3); }
   </style>
 </head>
 <body>
@@ -284,32 +115,23 @@
     <div class="subtitle">Tara Air 9N-AET</div>
     <div class="date">Pokhara → Jomsom • 29 May 2022</div>
   </div>
-
   <div class="card">
     <h2>Enter Your Details</h2>
     <div class="card-sub">CAAN Mandatory Training</div>
-
     <div class="input-group">
       <label>✏️ FULL NAME</label>
       <input type="text" id="player-name" placeholder="Enter your full name" autocomplete="off">
     </div>
-
     <div class="input-group">
       <label>📧 EMAIL ADDRESS</label>
       <input type="email" id="player-email" placeholder="Enter your email address" autocomplete="off">
     </div>
-
     <button class="btn" onclick="showInvestigationModal()">▶ START CASE STUDY</button>
-
     <div class="info-box">
-      <p>📋 <strong>10 Questions | 100 Points</strong><br>
-      Passing score: 70 points (70%) • Time limit: 30 minutes</p>
+      <p>📋 <strong>10 Questions | 100 Points</strong><br>Passing score: 70 points (70%) • Time limit: 30 minutes</p>
     </div>
   </div>
-
-  <div class="footer">
-    A project by Ghanshyam Acharya, Human Factor Trainer | © 2026
-  </div>
+  <div class="footer">A project by Ghanshyam Acharya, Human Factor Trainer | © 2026</div>
 </div>
 
 <div id="investigation-modal" class="modal-overlay">
@@ -320,29 +142,20 @@
     </div>
     <div class="modal-body">
       <h4>🕒 Accident Overview</h4>
-      <p>On <strong>29 May 2022</strong>, Tara Air flight 9N-AET, a DHC-6 Twin Otter, crashed near Jomsom, Nepal, while operating a VFR flight from Pokhara to Jomsom. All <strong>22 occupants (4 crew, 18 passengers)</strong> lost their lives. The aircraft impacted mountainous terrain in controlled flight (CFIT).</p>
-
+      <p>On <strong>29 May 2022</strong>, Tara Air flight 9N-AET, a DHC-6 Twin Otter, crashed near Jomsom, Nepal. All <strong>22 occupants</strong> lost their lives. The aircraft impacted mountainous terrain in controlled flight (CFIT).</p>
       <h4>🌧️ Weather Conditions</h4>
-      <p>The flight departed into <strong>deteriorating weather conditions</strong> with rain, low ceiling, and reduced visibility. The crew attempted to maintain VFR but inadvertently entered IMC conditions.</p>
-
+      <p>The flight departed into <strong>deteriorating weather conditions</strong> with rain, low ceiling, and reduced visibility.</p>
       <h4>🔧 Key Investigation Findings</h4>
       <ul>
-        <li>Captain expressed hesitation about weather but continued flight</li>
-        <li>TAWS (Terrain Awareness Warning System) was intentionally inhibited</li>
-        <li>First Officer had significantly less experience (520 vs 17,500 hours)</li>
-        <li>Poor Crew Resource Management (CRM) in the cockpit</li>
-        <li>Normalization of marginal VFR operations over time</li>
-        <li>External pressure (passenger/ground crew) to continue</li>
+        <li>Captain expressed hesitation but continued</li>
+        <li>TAWS was intentionally inhibited</li>
+        <li>First Officer: 520 hours vs Captain: 17,500 hours</li>
+        <li>Poor Crew Resource Management (CRM)</li>
+        <li>Normalization of marginal VFR operations</li>
       </ul>
-
       <div class="key-finding">
-        <strong>⚠️ Key Human Factors Finding:</strong> The investigation identified <strong>plan continuation bias, authority gradient issues, and drift in safety margins</strong> as contributing factors. The accident report was "written years before the accident" through organizational decisions.
+        <strong>⚠️ Key Human Factors Finding:</strong> Plan continuation bias, authority gradient issues, and drift in safety margins.
       </div>
-
-      <h4>📚 Frameworks to Consider</h4>
-      <p>As you answer the 10 questions, apply these human factors frameworks:<br>
-      <strong>Dirty Dozen, Swiss Cheese, Normalization of Deviance, Authority Gradient, Situational Awareness, Psychological Safety, Just Culture, Drift into Failure</strong></p>
-
       <button class="btn-continue" onclick="startCaseStudy()">▶ CONTINUE TO CASE STUDY</button>
     </div>
   </div>
@@ -350,74 +163,27 @@
 
 <script>
   let pendingParticipant = null;
-
   function showInvestigationModal() {
-    const nameInput = document.getElementById('player-name');
-    const emailInput = document.getElementById('player-email');
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
-
-    if (!name) {
-      alert('Please enter your full name to continue.');
-      nameInput.focus();
-      return;
-    }
-
-    if (!email) {
-      alert('Please enter your email address to continue.');
-      emailInput.focus();
-      return;
-    }
-
+    const name = document.getElementById('player-name').value.trim();
+    const email = document.getElementById('player-email').value.trim();
+    if (!name) { alert('Please enter your full name.'); return; }
+    if (!email) { alert('Please enter your email address.'); return; }
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      alert('Please enter a valid email address (e.g., name@example.com).');
-      emailInput.focus();
-      return;
-    }
-
-    pendingParticipant = {
-      id: Date.now().toString(),
-      name: name,
-      email: email,
-      role: 'participant',
-      score: 0,
-      joinedAt: new Date().toISOString()
-    };
-
+    if (!emailPattern.test(email)) { alert('Please enter a valid email address.'); return; }
+    pendingParticipant = { id: Date.now().toString(), name: name, email: email, role: 'participant', score: 0, joinedAt: new Date().toISOString() };
     document.getElementById('investigation-modal').classList.add('open');
   }
-
-  function closeModal() {
-    document.getElementById('investigation-modal').classList.remove('open');
-    pendingParticipant = null;
-  }
-
+  function closeModal() { document.getElementById('investigation-modal').classList.remove('open'); pendingParticipant = null; }
   function startCaseStudy() {
-    if (!pendingParticipant) {
-      window.location.href = 'index.html';
-      return;
-    }
-
+    if (!pendingParticipant) { window.location.href = 'index.html'; return; }
     localStorage.setItem('hf-current-player', JSON.stringify(pendingParticipant));
-
-    let allParticipants = JSON.parse(localStorage.getItem('hf-participants') || '[]');
-    const existing = allParticipants.find(p => p.name === pendingParticipant.name);
-    if (!existing) {
-      allParticipants.push(pendingParticipant);
-      localStorage.setItem('hf-participants', JSON.stringify(allParticipants));
-    }
-
+    let all = JSON.parse(localStorage.getItem('hf-participants') || '[]');
+    if (!all.find(p => p.name === pendingParticipant.name)) { all.push(pendingParticipant); localStorage.setItem('hf-participants', JSON.stringify(all)); }
     closeModal();
     window.location.href = 'casestudy.html';
   }
-
-  document.getElementById('player-name').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') showInvestigationModal();
-  });
-  document.getElementById('player-email').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') showInvestigationModal();
-  });
+  document.getElementById('player-name').addEventListener('keypress', e => { if (e.key === 'Enter') showInvestigationModal(); });
+  document.getElementById('player-email').addEventListener('keypress', e => { if (e.key === 'Enter') showInvestigationModal(); });
 </script>
 </body>
 </html>

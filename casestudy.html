@@ -52,6 +52,7 @@
     @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -67,6 +68,10 @@
 <div class="main-container" id="main-container"></div>
 
 <script>
+  const SUPABASE_URL = 'https://etxkdcrmttopdlasqmqk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0eGtkY3JtdHRvcGRsYXNxbXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODU5MjAsImV4cCI6MjA5Njc2MTkyMH0.RrLVoHefTpHhhgH1Bc_IhZUGGrmmq9QilqDt-QbE6tk';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   const QUESTIONS = [
     { id:1, framework:"Dirty Dozen", scenario:"Captain hesitant but passenger/ground crew advises strongly to continue.", question:"Which Dirty Dozen factor is most clearly at work?", options:["Pressure","Complacency","Lack of assertiveness","Norms"], correct:0, points:10 },
     { id:2, framework:"Normalization of Deviance", scenario:"TAWS inhibited due to nuisance warnings. Crew got used to flying without it.", question:"This reflects which concept?", options:["Plan continuation bias","Normalization of deviance","Confirmation bias","Sunk cost fallacy"], correct:1, points:10 },
@@ -80,27 +85,82 @@
     { id:10, framework:"Accident Chain", scenario:"Route economics → Marginal weather policy → No TAWS → CFIT.", question:"Where did the accident begin?", options:["Frontline","Cockpit","Executive desk","Regulator"], correct:2, points:10 }
   ];
 
-  let currentPlayer = null, currentIndex = 0, answers = [], sessionEnd = null, timer = null;
-  let sessionActive = true;
+  let currentPlayer = null, currentIndex = 0, answers = [], sessionEnd = null, timer = null, sessionActive = true;
+  let supabaseRecordId = null;
 
   function escapeHtml(s) { return s ? s.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;') : ''; }
   function showMsg(msg) { let d=document.createElement('div'); d.className='success-message'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); }
-  function getGrade(s) { if(s>=80) return {name:"Distinction",class:"grade-distinction",icon:"🏆"}; if(s>=70) return {name:"Completed",class:"grade-completed",icon:"✅"}; return {name:"Attended",class:"grade-attended",icon:"📋"}; }
+  function getGrade(score) { if(score>=80) return {name:"Distinction",class:"grade-distinction",icon:"🏆"}; if(score>=70) return {name:"Completed",class:"grade-completed",icon:"✅"}; return {name:"Attended",class:"grade-attended",icon:"📋"}; }
   function calcScore() { return answers.reduce((s,a)=>s+(a.isCorrect?QUESTIONS[a.idx].points:0),0); }
   function updateScore() { let total=calcScore(); let g=getGrade(total); document.getElementById('player-score').innerHTML=`Score: ${total} pts <span style="font-size:0.65rem;">${g.icon}</span>`; if(currentPlayer) { currentPlayer.score=total; localStorage.setItem('hf-current-player',JSON.stringify(currentPlayer)); } }
+
   function saveLocal() { localStorage.setItem(`tara-answers-${currentPlayer.id}`,JSON.stringify(answers)); updateScore(); }
+
+  // ========== SUPABASE SAVE (UPSERT) ==========
+  async function saveToSupabase(progressPercent = null) {
+    if (!currentPlayer) return;
+    try {
+      const totalScore = calcScore();
+      const grade = getGrade(totalScore);
+      const completedCount = answers.length;
+      const percentComplete = progressPercent !== null ? progressPercent : (completedCount / QUESTIONS.length) * 100;
+      let status = 'started';
+      if (completedCount === QUESTIONS.length) status = grade.name.toLowerCase();
+      else if (completedCount > 0) status = 'in_progress';
+      
+      const record = {
+        name: currentPlayer.name,
+        email: currentPlayer.email,
+        score: totalScore,
+        grade: grade.name,
+        status: status,
+        progress_percent: Math.round(percentComplete),
+        answers_count: completedCount,
+        total_questions: QUESTIONS.length,
+        answers: answers,
+        session_id: getSessionId(),
+        updated_at: new Date().toISOString()
+      };
+      
+      if (!supabaseRecordId) {
+        // Insert new record
+        const { data, error } = await supabase.from('participants').insert([record]).select();
+        if (error) throw error;
+        if (data && data[0]) supabaseRecordId = data[0].id;
+        console.log('Inserted to Supabase:', record);
+      } else {
+        // Update existing record
+        const { error } = await supabase.from('participants').update(record).eq('id', supabaseRecordId);
+        if (error) throw error;
+        console.log('Updated Supabase:', record);
+      }
+    } catch (err) { console.error('Supabase error:', err); }
+  }
+
+  function getSessionId() { 
+    let id = localStorage.getItem('hf-session-id'); 
+    if (!id) { id = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8); localStorage.setItem('hf-session-id', id); } 
+    return id; 
+  }
 
   function startTimer() { if(timer) clearInterval(timer); sessionEnd=localStorage.getItem('hf-session-end-time'); if(!sessionEnd){ sessionEnd=Date.now()+30*60*1000; localStorage.setItem('hf-session-end-time',sessionEnd); } timer=setInterval(()=>{ let left=sessionEnd-Date.now(); if(left<=0 && sessionActive) endSession(); else if(sessionActive){ let m=Math.floor(left/60000),s=Math.floor((left%60000)/1000); let el=document.getElementById('timer-display'); if(el) el.textContent=`⏱️ ${m}:${s.toString().padStart(2,'0')}`; } },1000); }
   function endSession() { sessionActive=false; clearInterval(timer); renderCompletion(); }
 
-  function loadPlayer() {
+  async function loadPlayer() {
     let saved=localStorage.getItem('hf-current-player');
-    console.log('Loading player:', saved);
-    if(!saved){ alert('No session found. Redirecting to start.'); window.location.href='index.html'; return; }
+    if(!saved){ window.location.href='index.html'; return; }
     currentPlayer=JSON.parse(saved);
     document.getElementById('player-name').textContent=currentPlayer.name;
     let savedAns=localStorage.getItem(`tara-answers-${currentPlayer.id}`);
     if(savedAns) answers=JSON.parse(savedAns);
+    
+    // Check if already saved to Supabase
+    let existingId = localStorage.getItem(`supabase-id-${currentPlayer.id}`);
+    if (existingId) supabaseRecordId = existingId;
+    
+    // Save initial record to Supabase (if not exists)
+    await saveToSupabase();
+    
     startTimer();
     renderAll();
   }
@@ -125,7 +185,7 @@
   
   window.goTo = function(i) { if(i>=0 && i<QUESTIONS.length){ currentIndex=i; renderCurrent(); } };
   
-  function submitAndStay() {
+  async function submitAndStay() {
     let sel=document.querySelector('input[name="answer"]:checked');
     if(!sel){ showMsg('⚠️ Select an answer'); return false; }
     let selIdx=parseInt(sel.value), q=QUESTIONS[currentIndex], isCorrect=(selIdx===q.correct), pts=isCorrect?q.points:0;
@@ -133,6 +193,7 @@
     let newAns={ idx:currentIndex, qid:q.id, answer:selIdx, text:q.options[selIdx], isCorrect:isCorrect, points:pts };
     if(existing!==-1) answers[existing]=newAns; else answers.push(newAns);
     saveLocal();
+    await saveToSupabase();
     showMsg(isCorrect?`✓ Correct! +${pts}`:`✗ Incorrect. Correct: ${q.options[q.correct]}`);
     renderProgress();
     return true;
@@ -167,8 +228,9 @@
   
   function renderAll() { if(answers.length===QUESTIONS.length) renderCompletion(); else renderCurrent(); }
 
-  function renderCompletion() {
+  async function renderCompletion() {
     endSession();
+    await saveToSupabase(); // Final save
     let total=calcScore(), grade=getGrade(total);
     let results='';
     for(let i=0;i<QUESTIONS.length;i++) {
@@ -197,7 +259,8 @@
     document.getElementById('completionExitBtn')?.addEventListener('click', exitToJoin);
   }
 
-  window.generateCertificate = function() {
+  window.generateCertificate = async function() {
+    await saveToSupabase();
     const total = calcScore();
     const grade = getGrade(total);
     const playerName = currentPlayer ? currentPlayer.name : 'Participant';
